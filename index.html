@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Zabezpieczenia: strona ładuje tylko własne skrypty, nie łączy się z żadnym serwerem i nie wysyła formularzy. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Pierwsza Kasa – symulator finansowego życia</title>
+<meta name="description" content="Przeżyj 12 miesięcy dorosłego życia w 10 minut. Wypłata, oszczędzanie, pułapki i scamy – bez ściemy.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <button class="logo" data-act="go" data-arg="home" aria-label="Strona główna">
+    <span class="coin">zł</span><span>Pierwsza&nbsp;Kasa</span>
+  </button>
+  <nav>
+    <button data-act="go" data-arg="game">Symulator</button>
+    <button data-act="go" data-arg="quiz">Scam?</button>
+    <button data-act="go" data-arg="lessons">Lekcje</button>
+  </nav>
+</header>
+
+<main id="app"></main>
+
+<footer>
+  <p><strong>To edukacja, a nie porada inwestycyjna.</strong> Kwoty i stawki w grze są przybliżone i uproszczone.</p>
+  <p><strong>Prywatność:</strong> strona nie zbiera żadnych danych i nie używa ciasteczek. Wynik i odznaki zapisują się wyłącznie w Twojej przeglądarce.</p>
+  <p>Źródła i pomoc:
+    <a href="https://www.podatki.gov.pl" target="_blank" rel="noopener noreferrer">podatki.gov.pl</a> ·
+    <a href="https://www.zus.pl" target="_blank" rel="noopener noreferrer">zus.pl</a> ·
+    <a href="https://www.knf.gov.pl" target="_blank" rel="noopener noreferrer">knf.gov.pl</a> ·
+    <a href="https://incydent.cert.pl" target="_blank" rel="noopener noreferrer">incydent.cert.pl</a>
+  </p>
+  <p class="muted">Projekt społeczny w ramach olimpiady Zwolnieni z Teorii.</p>
+</footer>
+
+<noscript><p style="padding:16px">Ta strona potrzebuje włączonej obsługi JavaScript.</p></noscript>
+<script src="icons.js"></script>
+<script src="data.js"></script>
+<script src="data-extra.js"></script>
+<script src="lessons.js"></script>
+<script src="app.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

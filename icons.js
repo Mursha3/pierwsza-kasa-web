@@ -1,4 +1,4 @@
-/* Pierwsza Kasa – własny zestaw ikon SVG. Wyglądają tak samo na każdym urządzeniu,
+/* Ogarniam Kasę – własny zestaw ikon SVG. Wyglądają tak samo na każdym urządzeniu,
    w przeciwieństwie do emotek systemowych, których starsze systemy nie mają.
    Klasy kolorów: l limonka, v fiolet, c koral, g zieleń, s szary, t karton, k atrament, p papier, n bez wypełnienia. */
 

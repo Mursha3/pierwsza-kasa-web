@@ -7,8 +7,8 @@ function viewLessons() {
   <details class="card" open><summary>1. Brutto i netto: ile naprawdę dostaniesz</summary><div class="body">
     <p>Kwota w ogłoszeniu to zwykle <strong>brutto</strong>. Na konto trafia <strong>netto</strong>, czyli to, co zostaje po składkach i podatku.</p>
     <ul>
-      <li><strong>Umowa o pracę:</strong> składki społeczne (ok. 13,71%), zdrowotna (9%) i PIT (12%).</li>
-      <li><strong>Ulga dla młodych:</strong> do 26. roku życia nie płacisz PIT od pensji i zleceń do limitu ok. 85,5 tys. zł rocznie.</li>
+      <li><strong>Umowa o pracę:</strong> składki społeczne (13,71%), zdrowotna (9%) i PIT (12%, a od dochodu powyżej 120 tys. zł rocznie 32%).</li>
+      <li><strong>Ulga dla młodych:</strong> do 26. roku życia nie płacisz PIT od pensji i zleceń do limitu 85 528 zł przychodu rocznie.</li>
       <li><strong>Uczeń lub student do 26 lat na zleceniu:</strong> bez składek ZUS, więc brutto = netto.</li>
     </ul>
     <label class="field">Pensja brutto na umowie o pracę (zł)<input type="number" id="payB" value="5500" min="0" step="100"></label>
@@ -77,8 +77,14 @@ function calcPay() {
   el.innerHTML = `<table class="payslip">
     <tr><td>Składki społeczne</td><td class="neg">−${zl(p.spoleczne)}</td></tr>
     <tr><td>Składka zdrowotna</td><td class="neg">−${zl(p.zdrowotna)}</td></tr>
-    <tr><td>PIT</td><td class="${p.pit ? 'neg' : ''}">${p.pit ? '−' + zl(p.pit) : '0 zł'}</td></tr>
-    <tr class="total"><td>Na rękę (w przybliżeniu)</td><td>${zl(p.netto)}</td></tr></table>`;
+    <tr><td>PIT${p.overYoung || p.secondStep ? ' (średnio na miesiąc)' : ''}</td><td class="${p.pit ? 'neg' : ''}">${p.pit ? '−' + zl(p.pit) : '0 zł'}</td></tr>
+    <tr class="total"><td>Na rękę (w przybliżeniu)</td><td>${zl(p.netto)}</td></tr></table>
+    <p class="small muted" style="margin:8px 0 0">${[
+      p.overYoung ? 'Przy tej pensji w ciągu roku przekroczysz limit ulgi dla młodych (85 528 zł), więc od nadwyżki zapłacisz PIT.' : '',
+      p.secondStep ? 'Część rocznego dochodu przekracza 120 000 zł i jest opodatkowana stawką 32%.' : '',
+      p.overZus ? 'Powyżej 282 600 zł rocznie nie płaci się już składki emerytalnej i rentowej.' : '',
+      'Wyliczenie dla stawek z 2026 r., ze złożonym PIT-2 i bez PPK.'
+    ].filter(Boolean).join(' ')}</p>`;
 }
 
 function calcCompound() {

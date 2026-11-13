@@ -1,4 +1,4 @@
-/* Pierwsza Kasa – logika. Dane są w data.js, lekcje w lessons.js.
+/* Ogarniam Kasę – logika. Dane są w data.js, lekcje w lessons.js.
    Strona nie ma backendu i nie wysyła nigdzie żadnych danych. */
 'use strict';
 
@@ -19,6 +19,7 @@ document.addEventListener('input', e => {
 
 /* ---------- pamięć lokalna (tylko w przeglądarce gracza, z walidacją) ---------- */
 
+/* Klucze zapisu zostają pod starą nazwą projektu, żeby gracze nie stracili wyników i odznak. */
 const STORE_KEY = 'pierwszaKasa.v2', OLD_STORE_KEY = 'pierwszaKasa.v1';
 const BADGES = [
   { id: 'czysto', icon: 'shield', name: 'Niezatapialny', desc: 'Rok bez żadnego scamu' },
@@ -106,7 +107,7 @@ const FACTS = [
   'Podejrzany SMS możesz bezpłatnie przekazać na numer 8080.',
   'Poduszka finansowa to zapas na 3–6 miesięcy wydatków.',
   'RRSO pokazuje cały roczny koszt pożyczki razem z opłatami.',
-  'Inflacja 4% oznacza, że 1000 zł w skarpecie za rok kupi tyle, co dziś 960 zł.'
+  'Inflacja 4% oznacza, że 1000 zł w skarpecie za rok kupi tyle, co dziś ok. 960 zł.'
 ];
 
 function viewHome() {

@@ -1,4 +1,4 @@
-/* Pierwsza Kasa – rozbudowa: aktywa, inflacja, dodatkowe zdarzenia. Ładowane po data.js. */
+/* Ogarniam Kasę – rozbudowa: aktywa, inflacja, dodatkowe zdarzenia. Ładowane po data.js. */
 
 const pct = x => (x * 100).toFixed(1).replace('.', ',') + '%';
 const BELKA = 0.19;

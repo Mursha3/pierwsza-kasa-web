@@ -1,4 +1,4 @@
-/* Pierwsza Kasa – symulator: przebieg gry, inflacja, aktywa, podsumowania. Ładowane po app.js. */
+/* Ogarniam Kasę – symulator: przebieg gry, inflacja, aktywa, podsumowania. Ładowane po app.js. */
 'use strict';
 
 const val = (x, s) => (typeof x === 'function' ? x(s) : x);
@@ -120,7 +120,13 @@ ACT.toBudget = () => { S.phase = 'budget'; S.flash = ''; render(); window.scroll
 /* ---------- budżet ---------- */
 
 ACT.setLife = i => { if (LIFE[i]) { S.life = i; render(); } };
-ACT.setStep = v => { if ([50, 200, 1000, 'max'].includes(v)) { S.step = v; render(); } };
+/* Kwota wpłaty i wypłaty wpisywana przez gracza. Bez render(), żeby pole nie traciło fokusu. */
+const STEP_MAX = 10000000;
+document.addEventListener('input', e => {
+  if (e.target.id !== 'stepIn' || !S) return;
+  const v = Math.floor(+e.target.value);
+  S.step = Number.isFinite(v) && v > 0 ? Math.min(v, STEP_MAX) : 0;
+});
 ACT.toggleExtra = () => { if (S.jobless === 0) { S.extra = !S.extra; render(); } };
 ACT.toggleIns = () => { S.ins = !S.ins; render(); };
 ACT.buyCourse = () => {
@@ -139,16 +145,16 @@ ACT.startBiz = () => {
 };
 
 ACT.move = (id, dir) => {
-  const s = S, a = ASSETS.find(x => x.id === id), all = s.step === 'max';
+  const s = S, a = ASSETS.find(x => x.id === id);
   if (!a || s.phase !== 'budget') return;
   s.flash = '';
   if (dir > 0) {
-    const amt = Math.min(all ? Infinity : s.step, Math.max(0, available(s)));
-    if (amt <= 0) return;
+    const amt = Math.min(s.step, Math.max(0, available(s)));
+    if (amt <= 0) { if (!s.step) { s.flash = 'Najpierw wpisz kwotę.'; render(); } return; }
     s.cash -= amt; s[id] += amt; s.basis[id] += amt; s.depNet += amt;
   } else {
-    const amt = Math.min(all ? Infinity : s.step, s[id]);
-    if (amt <= 0) return;
+    const amt = Math.min(s.step, s[id]);
+    if (amt <= 0) { if (!s.step) { s.flash = 'Najpierw wpisz kwotę.'; render(); } return; }
     const frac = amt / s[id];
     const gain = amt - s.basis[id] * frac;
     const tax = a.taxed && gain > 0 ? gain * BELKA : 0;
@@ -167,7 +173,7 @@ ACT.move = (id, dir) => {
 
 ACT.repay = () => {
   const s = S;
-  const amt = Math.min(s.step === 'max' ? Infinity : s.step, Math.max(0, available(s)), s.debt);
+  const amt = Math.min(s.step, Math.max(0, available(s)), s.debt);
   s.cash -= amt; s.debt -= amt;
   if (s.debt < 1) s.debt = 0;
   render();
@@ -420,7 +426,7 @@ function foldSummary(s) {
 }
 
 function viewBudget(s) {
-  const av = available(s), steps = [50, 200, 1000, 'max'];
+  const av = available(s);
   const extras = `
     <div class="acct"><div><b>${ic('clock')} Dodatkowa zmiana</b><br><span class="small muted">+${zl(shiftPay(s))} w tym miesiącu, zadowolenie −5</span></div>
       <button class="btn sm ${s.extra ? 'primary' : ''}" data-act="toggleExtra" ${s.jobless > 0 ? 'disabled' : ''}>${s.extra ? 'Wzięta ✓' : 'Biorę'}</button></div>
@@ -452,8 +458,9 @@ function viewBudget(s) {
     </div>
 
     <h3 style="margin-top:20px">Gdzie trzymasz pieniądze?</h3>
-    <div class="chips" style="margin-bottom:6px"><span class="small muted" style="align-self:center">Kwota:</span>
-      ${steps.map(v => `<button class="chip ${s.step === v ? 'on' : ''}" data-act="setStep" data-arg="${v}">${v === 'max' ? 'Wszystko' : zl(v)}</button>`).join('')}</div>
+    <label class="amt">Kwota wpłaty lub wypłaty (zł)
+      <input type="number" id="stepIn" inputmode="numeric" min="1" step="1" value="${s.step || ''}" placeholder="np. 300"></label>
+    <p class="small muted" style="margin:4px 0 6px">Wpisz dowolną kwotę. Jeśli będzie większa niż to, co masz, przeniesie się wszystko.</p>
     ${assets}
     ${s.debt > 0 ? `<div class="acct"><div><b>${ic('warn')} Dług: ${zl(s.debt)}</b><br><span class="small neg">rośnie o ${pct(s.debtRate)} miesięcznie</span></div>
       <button class="btn sm danger" data-act="repay" ${av <= 0 ? 'disabled' : ''}>Spłać</button></div>` : ''}
@@ -574,7 +581,7 @@ function viewEnd(s) {
 
 ACT.share = () => {
   const sc = scoreOf(S);
-  const text = `Pierwsza Kasa (${lenLabel(S.months)}): mam ${zl(netWorth(S))} i wynik ${sc.total}/100 (${sc.title}). Dasz radę lepiej?`;
+  const text = `Ogarniam Kasę (${lenLabel(S.months)}): mam ${zl(netWorth(S))} i wynik ${sc.total}/100 (${sc.title}). Dasz radę lepiej?`;
   const url = location.protocol === 'https:' ? location.origin + location.pathname : '';
   const msg = document.getElementById('shareMsg');
   if (navigator.share) { navigator.share({ text, url: url || undefined }).catch(() => {}); return; }

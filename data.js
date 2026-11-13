@@ -1,4 +1,4 @@
-/* Pierwsza Kasa – symulator, quiz o scamach i lekcje. Bez backendu, bez danych osobowych. */
+/* Ogarniam Kasę – symulator, quiz o scamach i lekcje. Bez backendu, bez danych osobowych. */
 
 const app = document.getElementById('app');
 const zl = n => Math.round(n).toLocaleString('pl-PL') + ' zł';
@@ -7,12 +7,21 @@ const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 /* ---------- finanse ---------- */
 
 // Uproszczone wyliczenie pensji z umowy o pracę (stawki przybliżone).
+/* Liczone w skali roku i dzielone na 12, żeby uwzględnić limity roczne:
+   ulgę dla młodych (85 528 zł przychodu), drugi próg podatkowy (120 000 zł dochodu)
+   i limit podstawy składek emerytalnej i rentowej (30-krotność, 282 600 zł w 2026 r.).
+   Założenia: złożony PIT-2, podstawowe koszty uzyskania 250 zł miesięcznie, bez PPK. */
+const ZUS_LIMIT = 282600, YOUNG_LIMIT = 85528, TAX_STEP = 120000;
 function payroll(brutto, under26) {
-  const spoleczne = brutto * 0.1371;
-  const podstawa = brutto - spoleczne;
-  const zdrowotna = podstawa * 0.09;
-  const pit = under26 ? 0 : Math.max(0, Math.round((podstawa - 250) * 0.12 - 300));
-  return { brutto, spoleczne, zdrowotna, pit, netto: brutto - spoleczne - zdrowotna - pit };
+  const R = brutto * 12;
+  const spolY = Math.min(R, ZUS_LIMIT) * 0.1126 + R * 0.0245;   // emerytalna 9,76% + rentowa 1,5%, chorobowa 2,45%
+  const zdrowY = (R - spolY) * 0.09;
+  const taxed = R - (under26 ? Math.min(R, YOUNG_LIMIT) : 0);  // przychód poza ulgą dla młodych
+  const income = taxed > 0 ? Math.max(0, Math.round(taxed - spolY * taxed / R - 3000)) : 0;
+  const pitY = Math.max(0, income <= TAX_STEP ? income * 0.12 - 3600 : 10800 + (income - TAX_STEP) * 0.32);
+  const spoleczne = spolY / 12, zdrowotna = zdrowY / 12, pit = Math.round(pitY / 12);
+  return { brutto, spoleczne, zdrowotna, pit, netto: brutto - spoleczne - zdrowotna - pit,
+    overYoung: under26 && R > YOUNG_LIMIT && pit > 0, secondStep: income > TAX_STEP, overZus: R > ZUS_LIMIT };
 }
 
 // Wartość przyszła: kapitał A, wpłata m co miesiąc, stopa roczna r.

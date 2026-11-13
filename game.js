@@ -341,7 +341,7 @@ function hud(s) {
       ${liabilities(s) > 0 ? `<div class="debt"><span>Długi i raty</span><b>${zl(liabilities(s))}</b></div>` : ''}
     </div>
   </div>
-  <div class="hud static">
+  <div class="hud static hud-bars">
     <div class="mood"><span>${ic('smile')} Zadowolenie</span><div class="progress"><i style="width:${s.mood}%"></i></div><span>${Math.round(s.mood)}</span></div>
     <div class="mood goal"><span>${ic(s.goal.icon)} ${s.goal.name}</span><div class="progress"><i style="width:${gp * 100}%"></i></div><span>${Math.round(gp * 100)}%</span></div>
     <div class="infl small">${ic('price')} Ceny <b>+${pct(s.price - 1)}</b> od startu · inflacja w tym roku ok. <b>${pct(s.infl)}</b></div>
@@ -405,6 +405,20 @@ function viewGame() {
   return hud(s) + viewBudget(s);
 }
 
+/* Na telefonie sekcja „Dochód i ochrona” jest zwijana (mobile.css), żeby budżet był krótszy.
+   Na komputerze przycisk i podsumowanie mają atrybut hidden, a sekcja jest zawsze widoczna. */
+let foldOpen = false;
+ACT.fold = () => { foldOpen = !foldOpen; render(); };
+function foldSummary(s) {
+  const mark = (label, on) => (on ? `<b>${label} ✓</b>` : label);
+  return [
+    mark('dodatkowa zmiana', s.extra),
+    mark('kurs', s.courseDone || s.course > 0),
+    mark('biznes po godzinach', s.biz),
+    mark('ubezpieczenie', s.ins)
+  ].join(', ');
+}
+
 function viewBudget(s) {
   const av = available(s), steps = [50, 200, 1000, 'max'];
   const extras = `
@@ -431,8 +445,11 @@ function viewBudget(s) {
     ${av < 0 ? `<p class="small neg"><strong>Brakuje ${zl(-av)}.</strong> Wybierz tańszy styl życia, weź dodatkową zmianę albo wypłać z oszczędności, inaczej brak pokryje droga chwilówka.</p>` : ''}
     ${s.flash ? `<p class="flash small">${ic('info')} ${s.flash}</p>` : ''}
 
-    <h3 style="margin-top:16px">Dochód i ochrona</h3>
-    ${extras}
+    <div class="fold${foldOpen ? ' open' : ''}">
+      <div class="fold-head"><h3 style="margin-top:16px">Dochód i ochrona</h3><button class="chip m-only" hidden data-act="fold" aria-expanded="${foldOpen}">${foldOpen ? 'Zwiń' : 'Pokaż'}</button></div>
+      <p class="fold-sum small muted m-only" hidden>${foldSummary(s)}</p>
+      <div class="fold-body">${extras}</div>
+    </div>
 
     <h3 style="margin-top:20px">Gdzie trzymasz pieniądze?</h3>
     <div class="chips" style="margin-bottom:6px"><span class="small muted" style="align-self:center">Kwota:</span>

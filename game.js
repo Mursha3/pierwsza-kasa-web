@@ -443,7 +443,7 @@ function viewGame() {
     </div>`;
   }
   if (s.phase === 'pick') {
-    return `<div class="row between nick-bar"><span>${ic('user')} Grasz jako <strong>${esc(lastNick() || 'gość')}</strong></span><button class="chip" data-act="editNick">${lastNick() ? 'Zmień nick' : 'Ustaw nick'}</button></div>
+    return `<div class="row between nick-bar"><span>${ic('user')} Grasz jako <strong${lastNick() ? ' translate="no"' : ''}>${esc(lastNick() || 'gość')}</strong></span><button class="chip" data-act="editNick">${lastNick() ? 'Zmień nick' : 'Ustaw nick'}</button></div>
     <h2>Od 20 do 65 lat</h2><p class="muted">Od studenta do emerytury. Jedna tura to jeden rok, a decyzji jest więcej: kariera, mieszkanie, rodzina i odkładanie na starość.</p>
     <div class="chars" style="margin-bottom:26px">
       <button class="card char lime" data-act="startLife">
@@ -656,9 +656,11 @@ function viewEnd(s) {
 
 ACT.share = () => {
   const life = S.mode === 'life', sc = life ? lifeScore(S) : scoreOf(S);
-  const text = life
+  const pl = life
     ? `Ogarniam Kasę (od 20 do 65 lat): w wieku 65 lat mam ${zl(sc.net)} i wynik ${sc.total}/100 (${sc.title}). Dasz radę lepiej?`
     : `Ogarniam Kasę (${lenLabel(S.months)}): mam ${zl(netWorth(S))} i wynik ${sc.total}/100 (${sc.title}). Dasz radę lepiej?`;
+  // Tekst do udostępnienia nie trafia na stronę, więc tłumaczenie (i18n.js) trzeba wywołać ręcznie.
+  const text = typeof I18N === 'object' ? I18N.t(pl) : pl;
   const url = location.protocol === 'https:' ? location.origin + location.pathname : '';
   const msg = document.getElementById('shareMsg');
   if (navigator.share) { navigator.share({ text, url: url || undefined }).catch(() => {}); return; }

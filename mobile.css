@@ -147,11 +147,21 @@ details.card .body { padding: 0 12px 12px; }
   nav { gap: 0; }
   nav button { padding: 5px 6px; font-size: .76rem; }
 }
-/* Na bardzo wąskich telefonach „Symulator” i „Wyzwanie” mają krótsze napisy, żeby pięć zakładek zmieściło się w jednym rzędzie. */
-@media (max-width: 370px) {
+/* Flaga języka na telefonie: trochę mniejsza (napis PL/EN chowa już styles.css). */
+.lang .flag { width: 22px; height: 15px; }
+/* Na telefonie (do 600 px) zakładki mają krótsze napisy (Gra, 30 dni; po angielsku Game, Top, 30 days), żeby pięć zakładek i flaga zmieściły się w jednym rzędzie. */
+@media (max-width: 600px) {
   .nav-long { display: none; }
   .nav-short { display: inline; }
-  nav button { padding: 4px 5px; font-size: .74rem; }
+}
+@media (max-width: 370px) {
+  .top { padding: 10px 6px; gap: 4px; }
+  nav button { padding: 4px; font-size: .74rem; }
+  .lang { padding: 3px; }
+  .lang .flag { width: 20px; height: 14px; }
+}
+@media (max-width: 340px) {
+  nav button { padding: 4px 3px; font-size: .72rem; }
 }
 .podium-scene { height: 250px; padding-bottom: 26px; }
 .podium { --w: 84px; --d: 56px; gap: 12px; }

@@ -214,7 +214,7 @@ function podium(rows, online, mode) {
   const slot = (e, place) => `
     <div class="pod p${place}${e && isMe(e, online) ? ' me' : ''}">
       <div class="pod-block"><i class="pf f1"><b>${place}</b><span class="pod-who">${e
-        ? `${place === 1 ? ic('trophy') : ''}<span class="pod-nick">${charIcon(e.postac)}${esc(e.nick)}</span><span class="pod-net">${rankValue(e, mode)}</span>`
+        ? `${place === 1 ? ic('trophy') : ''}<span class="pod-nick" translate="no">${charIcon(e.postac)}${esc(e.nick)}</span><span class="pod-net">${rankValue(e, mode)}</span>`
         : '<span class="pod-nick muted">wolne miejsce</span>'}</span></i><i class="pf f2"></i><i class="pf f3"></i><i class="pf f4"></i><i class="pf top"></i></div>
     </div>`;
   // Podium jest tylko ozdobą (aria-hidden): czytnik ekranu czyta pełną listę pod spodem.
@@ -236,7 +236,7 @@ function viewRank() {
   // Pełna lista wszystkich graczy od 1. miejsca, pierwsza trójka w kolorach podium.
   const shown = rows.slice(0, rankShow), more = rows.length - shown.length;
   const all = shown.map((e, i) => `
-    <li class="${i < 3 ? `top${i + 1}` : ''}${isMe(e, online) ? ' me' : ''}"><span class="rk">${i + 1}${i < 3 ? '' : '.'}</span><span class="rn">${charIcon(e.postac)}${esc(e.nick)}</span><span class="rs small muted">${byPoints(rankMode) ? zl(e.net) : `${e.score}/100 pkt`}</span><b>${rankValue(e, rankMode)}</b></li>`).join('');
+    <li class="${i < 3 ? `top${i + 1}` : ''}${isMe(e, online) ? ' me' : ''}"><span class="rk">${i + 1}${i < 3 ? '' : '.'}</span><span class="rn" translate="no">${charIcon(e.postac)}${esc(e.nick)}</span><span class="rs small muted">${byPoints(rankMode) ? zl(e.net) : `${e.score}/100 pkt`}</span><b>${rankValue(e, rankMode)}</b></li>`).join('');
   return `
   <h2>${ic('trophy')} Ranking</h2>
   <p class="muted">${byPoints(rankMode)

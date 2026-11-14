@@ -314,6 +314,11 @@ details.card ul { padding-left: 20px; margin: 0 0 .8em; }
 .rank-list .rn { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rank-list b { font-family: "Space Grotesk", sans-serif; white-space: nowrap; }
 .rank-list li.me { background: var(--lime); border-radius: 8px; }
+.rank-card h3 { margin: 10px 4px 2px; }
+.rank-more { margin: 4px 0 12px; }
+/* Pierwsza trójka na liście ma numer w kółku w kolorze swojego bloku na podium. */
+.rank-list li.top1 { --c: var(--lime); } .rank-list li.top2 { --c: #e9e6de; } .rank-list li.top3 { --c: #ecc995; }
+.rank-list li[class*="top"] .rk { display: grid; place-items: center; width: 30px; height: 30px; border: 2px solid var(--ink); border-radius: 50%; background: var(--c); font-size: .9rem; }
 .center { text-align: center; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .nick-bar { background: var(--card); border: 2px solid var(--line); border-radius: 12px; padding: 8px 12px; margin-bottom: 16px; }

@@ -161,6 +161,7 @@ details.card .body { padding: 0 12px 12px; }
 .pod-net { font-size: .74rem; }
 .rank-list li { grid-template-columns: 30px minmax(0, 1fr) auto; padding: 8px 2px; font-size: .88rem; }
 .rank-list .rs { display: none; }
+.rank-list li[class*="top"] .rk { width: 27px; height: 27px; font-size: .82rem; }
 .nick-bar { font-size: .86rem; padding: 6px 10px; }
 
 /* Ekran wyniku: na telefonie tylko zdobyte odznaki, pełna kolekcja jest na stronie głównej. */

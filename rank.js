@@ -4,7 +4,9 @@
    Do bazy trafiają tylko: losowy identyfikator urządzenia, nick, tryb gry, majątek i wynik punktowy. */
 'use strict';
 
-const RANK_KEY = 'ogarniamKase.ranking.v1', NICK_KEY = 'ogarniamKase.nick', PLAYER_KEY = 'ogarniamKase.player', RANK_KEEP = 50;
+const RANK_KEY = 'ogarniamKase.ranking.v1', NICK_KEY = 'ogarniamKase.nick', PLAYER_KEY = 'ogarniamKase.player';
+// Z bazy przychodzą wszyscy gracze danego trybu (Supabase oddaje najwyżej 1000 wierszy naraz), na stronie po 100.
+const RANK_LIMIT = 1000, RANK_PAGE = 100;
 const RANK_MODES = [['life', 'Od 20 do 65 lat'], ['12', '1 rok'], ['24', '2 lata'], ['36', '3 lata']];
 const CFG = typeof RANKING_CONFIG === 'object' && RANKING_CONFIG ? RANKING_CONFIG : { url: '', key: '' };
 const ONLINE = /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(CFG.url) && typeof CFG.key === 'string' && CFG.key.length > 20;
@@ -98,7 +100,7 @@ const RANK_NET = {
   },
   async list(mode) {
     const order = byPoints(mode) ? 'score.desc,net.desc' : 'net.desc,score.desc';
-    const url = `${CFG.url}/rest/v1/ranking_top?mode=eq.${encodeURIComponent(mode)}&select=player,nick,net,score,postac,created_at&order=${order}&limit=${RANK_KEEP}`;
+    const url = `${CFG.url}/rest/v1/ranking_top?mode=eq.${encodeURIComponent(mode)}&select=player,nick,net,score,postac,created_at&order=${order}&limit=${RANK_LIMIT}`;
     const r = await fetch(url, { headers: this.head(), cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
@@ -119,21 +121,29 @@ const RANK_NET = {
   }
 };
 
-let rankMode = 'life', rankNew = '', rankData = { mode: '', rows: [], status: ONLINE ? 'loading' : 'local' };
+let rankMode = 'life', rankNew = '', rankShow = RANK_PAGE, rankData = { mode: '', rows: [], status: ONLINE ? 'loading' : 'local' };
 
 function refreshRank() {
   if (!ONLINE) return;
-  const mode = rankMode;
-  rankData = { mode, rows: rankData.mode === mode ? rankData.rows : [], status: 'loading' };
+  const mode = rankMode, before = rankData.mode === mode ? rankData.rows : [];
+  rankData = { mode, rows: before, status: 'loading' };
   RANK_NET.list(mode)
-    .then(rows => { rankData = { mode, rows, status: 'online' }; })
-    .catch(() => { rankData = { mode, rows: [], status: 'error' }; })
-    .finally(() => { if (view === 'rank' && rankMode === mode) render(); });
+    // Odpowiedź dla trybu, z którego gracz już przeszedł dalej, jest pomijana.
+    .then(rows => { if (rankMode === mode) rankData = { mode, rows, status: 'online' }; })
+    .catch(() => { if (rankMode === mode) rankData = { mode, rows: [], status: 'error' }; })
+    .finally(() => {
+      if (view !== 'rank' || rankMode !== mode) return;
+      // Gdy wyniki się nie zmieniły, strona zostaje jak jest i podium nie wjeżdża drugi raz.
+      if (before.length && rankData.status === 'online' && JSON.stringify(rankData.rows) === JSON.stringify(before)) return;
+      render();
+    });
 }
 
 // Lista do pokazania: wspólna z bazy, a gdy jej nie ma, ta z przeglądarki.
 function rankRows() {
-  if (ONLINE && rankData.mode === rankMode && rankData.status === 'online') return { rows: rankData.rows, online: true };
+  // Podczas odświeżania zostaje poprzednia lista z bazy, żeby ranking nie migał.
+  const fresh = rankData.status === 'online' || (rankData.status === 'loading' && rankData.rows.length);
+  if (ONLINE && rankData.mode === rankMode && fresh) return { rows: rankData.rows, online: true };
   return { rows: RANK.list(rankMode), online: false };
 }
 function isMe(e, online) {
@@ -183,7 +193,8 @@ ACT.rankSave = mode => {
     .finally(() => { s.ranking = false; if (view === 'game' && S === s) render(); });
 };
 
-ACT.rankMode = m => { if (RANK_MODES.some(x => x[0] === String(m))) { rankMode = String(m); refreshRank(); render(); } };
+ACT.rankMode = m => { if (RANK_MODES.some(x => x[0] === String(m))) { rankMode = String(m); rankShow = RANK_PAGE; refreshRank(); render(); } };
+ACT.rankMore = () => { rankShow += RANK_PAGE; render(); };
 
 ACT.rankClear = (a, b, el) => {
   if (el.dataset.sure !== '1') {
@@ -206,9 +217,8 @@ function podium(rows, online, mode) {
         ? `${place === 1 ? ic('trophy') : ''}<span class="pod-nick">${charIcon(e.postac)}${esc(e.nick)}</span><span class="pod-net">${rankValue(e, mode)}</span>`
         : '<span class="pod-nick muted">wolne miejsce</span>'}</span></i><i class="pf f2"></i><i class="pf f3"></i><i class="pf f4"></i><i class="pf top"></i></div>
     </div>`;
-  const sr = [0, 1, 2].filter(i => rows[i]).map(i => `<li>${i + 1}. miejsce: ${esc(rows[i].nick)}, ${rankValue(rows[i], mode)}</li>`).join('');
-  return `<ol class="sr-only">${sr}</ol>
-    <div class="podium-scene" id="podium" aria-hidden="true"><div class="podium"><div class="pod-floor"></div>${slot(rows[1], 2)}${slot(rows[0], 1)}${slot(rows[2], 3)}</div></div>`;
+  // Podium jest tylko ozdobą (aria-hidden): czytnik ekranu czyta pełną listę pod spodem.
+  return `<div class="podium-scene" id="podium" aria-hidden="true"><div class="podium"><div class="pod-floor"></div>${slot(rows[1], 2)}${slot(rows[0], 1)}${slot(rows[2], 3)}</div></div>`;
 }
 
 function initPodium() {
@@ -223,8 +233,10 @@ function viewRank() {
   const { rows, online } = rankRows();
   const loading = ONLINE && rankData.status === 'loading' && !online;
   const failed = ONLINE && rankData.status === 'error';
-  const rest = rows.slice(3).map((e, i) => `
-    <li class="${isMe(e, online) ? 'me' : ''}"><span class="rk">${i + 4}.</span><span class="rn">${charIcon(e.postac)}${esc(e.nick)}</span><span class="rs small muted">${byPoints(rankMode) ? zl(e.net) : `${e.score}/100 pkt`}</span><b>${rankValue(e, rankMode)}</b></li>`).join('');
+  // Pełna lista wszystkich graczy od 1. miejsca, pierwsza trójka w kolorach podium.
+  const shown = rows.slice(0, rankShow), more = rows.length - shown.length;
+  const all = shown.map((e, i) => `
+    <li class="${i < 3 ? `top${i + 1}` : ''}${isMe(e, online) ? ' me' : ''}"><span class="rk">${i + 1}${i < 3 ? '' : '.'}</span><span class="rn">${charIcon(e.postac)}${esc(e.nick)}</span><span class="rs small muted">${byPoints(rankMode) ? zl(e.net) : `${e.score}/100 pkt`}</span><b>${rankValue(e, rankMode)}</b></li>`).join('');
   return `
   <h2>${ic('trophy')} Ranking</h2>
   <p class="muted">${byPoints(rankMode)
@@ -234,7 +246,9 @@ function viewRank() {
   ${failed ? '<p class="flash small">Nie udało się połączyć ze wspólnym rankingiem. Pokazuję wyniki z tego urządzenia.</p>' : ''}
   ${loading ? '<div class="card"><p style="margin:0">Wczytuję ranking…</p></div>' : rows.length ? `
     <div class="card podium-card">${podium(rows, online, rankMode)}<p class="small muted center" style="margin:0">Przeciągnij, żeby obrócić podium.</p></div>
-    ${rest ? `<div class="card rank-card"><ol class="rank-list">${rest}</ol></div>` : ''}
+    <div class="card rank-card"><h3>Wszyscy gracze <span class="muted">(${rows.length})</span></h3>
+      <ol class="rank-list">${all}</ol>
+      ${more > 0 ? `<button class="btn sm rank-more" data-act="rankMore">${more > RANK_PAGE ? `Pokaż kolejnych ${RANK_PAGE} (zostało ${more})` : `Pokaż pozostałych (${more})`}</button>` : ''}</div>
     ${online ? '' : '<button class="btn sm" data-act="rankClear">Wyczyść ten ranking</button>'}`
     : `<div class="card"><p style="margin:0 0 12px">W tym trybie nikt jeszcze nie zapisał wyniku. Zagraj i dodaj swój na ekranie końcowym.</p>
       <button class="btn primary" data-act="go" data-arg="game">Zagraj teraz →</button></div>`}`;

@@ -33,9 +33,9 @@ const BADGES = [
   { id: 'maraton', icon: 'calendar', name: 'Maratończyk', desc: 'Ukończona gra na 3 lata' },
   { id: 'kurs', icon: 'book', name: 'Inwestycja w siebie', desc: 'Ukończony kurs z certyfikatem' },
   { id: 'polisa', icon: 'umbrella', name: 'Ubezpieczony', desc: 'Strata pokryta z polisy' },
-  { id: 'emeryt', icon: 'sun', name: 'Spokojna emerytura', desc: 'Całe życie: emerytura to co najmniej 70% pensji' },
-  { id: 'milioner', icon: 'coin', name: 'Milioner', desc: 'Całe życie: majątek od miliona złotych' },
-  { id: 'dom', icon: 'key', name: 'Na swoim', desc: 'Całe życie: spłacone własne mieszkanie' }
+  { id: 'emeryt', icon: 'sun', name: 'Spokojna emerytura', desc: 'Gra od 20 do 65 lat: emerytura to co najmniej 70% pensji' },
+  { id: 'milioner', icon: 'coin', name: 'Milioner', desc: 'Gra od 20 do 65 lat: majątek od miliona złotych' },
+  { id: 'dom', icon: 'key', name: 'Na swoim', desc: 'Gra od 20 do 65 lat: spłacone własne mieszkanie' }
 ];
 function loadStore() {
   const empty = () => ({ best: { 12: 0, 24: 0, 36: 0 }, games: 0, badges: [] });
@@ -77,8 +77,10 @@ let Q = null;   // stan quizu
 function go(v) {
   if (!['home', 'game', 'quiz', 'lessons', 'rank'].includes(v)) v = 'home';
   view = v;
-  if (v === 'game' && !S) S = { phase: 'pick' };
+  // Gra w trakcie wraca po odświeżeniu strony. Bez zapisanej gry: najpierw nick, potem wybór postaci.
+  if (v === 'game' && !S) S = loadGame() || { phase: lastNick() ? 'pick' : 'name' };
   if (v === 'quiz' && !Q) Q = { i: 0, score: 0, answered: null };
+  if (v === 'rank') refreshRank();
   render();
   window.scrollTo(0, 0);
 }
@@ -90,6 +92,8 @@ function render() {
   app.innerHTML = '<div class="fade">' + html + '</div>';
   if (view === 'lessons') { calcCompound(); calcPay(); calcInfl(); }
   if (view === 'home') { initCoin(); initTilt(); }
+  if (view === 'game') saveGame();
+  if (view === 'rank') initPodium();
   initStacks();
 }
 
@@ -132,7 +136,7 @@ function viewHome() {
   ${STORE.games ? `<div class="card flat stats"><span><b>${Math.max(STORE.best[12], STORE.best[24], STORE.best[36])}</b>/100 najlepszy wynik</span><span><b>${STORE.games}</b> ${STORE.games === 1 ? 'rozgrywka' : 'rozgrywek'}</span><span><b>${got}</b>/${BADGES.length} odznak</span></div>` : ''}
 
   <div class="tiles">
-    <button class="card tilt" data-act="go" data-arg="game"><div class="emoji">${ic('gamepad')}</div><h3>Symulator</h3><p class="muted small">Szybka gra na 1–3 lata albo całe życie: od studenta do emerytury, ze zmianą pracy i kupnem mieszkania.</p></button>
+    <button class="card tilt" data-act="go" data-arg="game"><div class="emoji">${ic('gamepad')}</div><h3>Symulator</h3><p class="muted small">Szybka gra na 1–3 lata albo gra od 20 do 65 lat: od studenta do emerytury, ze zmianą pracy i kupnem mieszkania.</p></button>
     <button class="card tilt" data-act="go" data-arg="quiz"><div class="emoji">${ic('magnifier')}</div><h3>Scam czy nie scam?</h3><p class="muted small">Osiem wiadomości. Rozpoznasz, które wysłał oszust?</p></button>
     <button class="card tilt" data-act="go" data-arg="lessons"><div class="emoji">${ic('bolt')}</div><h3>Lekcje w 2 minuty</h3><p class="muted small">Brutto i netto, budżet, procent składany, długi i słowniczek.</p></button>
     <button class="card tilt" data-act="go" data-arg="rank"><div class="emoji">${ic('target')}</div><h3>Ranking</h3><p class="muted small">Najlepsze wyniki. Zapisz swój pod nickiem i sprawdź, kto ogarnia kasę najlepiej.</p></button>
@@ -224,6 +228,8 @@ const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Wspólna obsługa: przeciąganie obraca scenę, puszczenie daje bezwładność, bezczynność powolny obrót.
 function spinner(scene, apply, opts) {
   const st = { rx: opts.rx || 0, ry: opts.ry || 0, vx: 0, vy: 0, drag: false, moved: 0, px: 0, py: 0 };
+  // Opcjonalny zakres obrotu w poziomie (podium w rankingu nie obraca się tyłem do gracza).
+  const clampY = y => (opts.minY === undefined ? y : clamp(y, opts.minY, opts.maxY));
   scene.addEventListener('pointerdown', e => {
     st.drag = true; st.moved = 0; st.px = e.clientX; st.py = e.clientY; st.vx = st.vy = 0;
     scene.setPointerCapture(e.pointerId);
@@ -233,7 +239,7 @@ function spinner(scene, apply, opts) {
     const dx = e.clientX - st.px, dy = e.clientY - st.py;
     st.px = e.clientX; st.py = e.clientY; st.moved += Math.abs(dx) + Math.abs(dy);
     st.vy = dx * 0.6; st.vx = opts.lockX ? 0 : -dy * 0.6;
-    st.ry += st.vy; st.rx = clamp(st.rx + st.vx, opts.minX ?? -80, opts.maxX ?? 80);
+    st.ry = clampY(st.ry + st.vy); st.rx = clamp(st.rx + st.vx, opts.minX ?? -80, opts.maxX ?? 80);
   });
   const up = () => { if (st.drag) { st.drag = false; if (st.moved < 6 && opts.tap) opts.tap(st); } };
   scene.addEventListener('pointerup', up);
@@ -242,7 +248,7 @@ function spinner(scene, apply, opts) {
   (function loop() {
     if (!scene.isConnected) return;
     if (!st.drag) {
-      st.ry += st.vy; st.rx = clamp(st.rx + st.vx, opts.minX ?? -80, opts.maxX ?? 80);
+      st.ry = clampY(st.ry + st.vy); st.rx = clamp(st.rx + st.vx, opts.minX ?? -80, opts.maxX ?? 80);
       st.vy *= 0.95; st.vx *= 0.9;
       if (!calm && Math.abs(st.vy) < (opts.idle || 0)) st.vy = opts.idle;
     }

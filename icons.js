@@ -3,6 +3,8 @@
    Klasy kolorów: l limonka, v fiolet, c koral, g zieleń, s szary, t karton, k atrament, p papier, n bez wypełnienia. */
 
 const ICONS = {
+  trophy: '<path class="l" d="M10 4h12v8a6 6 0 0 1-12 0z"/><path class="n" d="M10 7H5c0 4 2 7 5 7M22 7h5c0 4-2 7-5 7"/><path d="M14 18h4v5h-4z"/><path class="t" d="M9 23h14v5H9z"/>',
+  user: '<circle class="v" cx="16" cy="11" r="6"/><path class="l" d="M5 28c1-6 5-9 11-9s10 3 11 9z"/>',
   shield: '<path class="l" d="M16 3l11 4v8c0 7-5 12-11 14C10 27 5 22 5 15V7z"/><path class="n" d="M11 15l4 4 7-8"/>',
   receipt: '<path d="M8 4h16v24l-4-3-4 3-4-3-4 3z"/><path class="n" d="M12 10h8M12 15h8M12 20h5"/>',
   buoy: '<circle class="c" cx="16" cy="16" r="12"/><circle cx="16" cy="16" r="5"/><path class="n" d="M16 4v7M16 21v7M4 16h7M21 16h7"/>',

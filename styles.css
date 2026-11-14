@@ -302,10 +302,47 @@ details.card ul { padding-left: 20px; margin: 0 0 .8em; }
 
 /* ranking */
 .amt input[type=text] { width: 180px; }
-.rank-card { padding: 6px 14px; overflow-x: auto; }
-.rank { width: 100%; border-collapse: collapse; font-size: .95rem; }
-.rank th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); padding: 8px 6px; }
-.rank td { padding: 8px 6px; border-top: 1px dashed #c9c5ba; white-space: nowrap; }
-.rank td:first-child { font: 700 1rem "Space Grotesk", sans-serif; width: 28px; }
-.rank tr.me td { background: var(--lime); }
+.rank-card { padding: 4px 14px; }
+.rank-list { list-style: none; margin: 0; padding: 0; }
+.rank-list li { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 10px 4px; border-top: 1px dashed #c9c5ba; }
+.rank-list li:first-child { border-top: 0; }
+.rank-list .rk { font: 700 1rem "Space Grotesk", sans-serif; }
+.rank-list .rn { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-list b { font-family: "Space Grotesk", sans-serif; white-space: nowrap; }
+.rank-list li.me { background: var(--lime); border-radius: 8px; }
+.center { text-align: center; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.nick-bar { background: var(--card); border: 2px solid var(--line); border-radius: 12px; padding: 8px 12px; margin-bottom: 16px; }
+.nick-card input[type=text] { font: inherit; font-size: 16px; padding: 10px 12px; border: 2px solid var(--line); border-radius: 10px; width: 100%; max-width: 320px; background: var(--card); color: inherit; }
+
+/* podium 3D: trzy bloki z tymi samymi ścianami co słupki na ekranie wyniku */
+.podium-card { padding-top: 6px; }
+.podium-scene { height: 310px; perspective: 1000px; display: grid; place-items: end center; padding-bottom: 34px; cursor: grab; touch-action: pan-y; user-select: none; overflow: hidden; }
+.podium-scene:active { cursor: grabbing; }
+.podium { position: relative; display: flex; align-items: flex-end; gap: 16px; transform-style: preserve-3d; will-change: transform; --w: 104px; --d: 76px; }
+.pod { position: relative; width: var(--w); transform-style: preserve-3d; }
+.p1 { --h: 150px; --c: var(--lime); --c2: #9fcc1c; }
+.p2 { --h: 106px; --c: #e9e6de; --c2: #c9c5ba; }
+.p3 { --h: 76px; --c: #ecc995; --c2: #c9a06a; }
+.pod-block { position: relative; height: var(--h); transform-style: preserve-3d; transform-origin: 50% 100%; animation: rise .7s cubic-bezier(.2, .8, .2, 1) both; }
+.p2 .pod-block { animation-delay: .12s; } .p3 .pod-block { animation-delay: .24s; }
+@keyframes rise { from { transform: scaleY(.04); } to { transform: none; } }
+.pf { position: absolute; display: grid; place-items: center; border: 2px solid var(--ink); background: var(--c); }
+.pf.f1, .pf.f2 { inset: 0; }
+.pf.f1 { transform: translateZ(calc(var(--d) / 2)); }
+.pf.f2 { transform: rotateY(180deg) translateZ(calc(var(--d) / 2)); background: var(--c2); }
+.pf.f3, .pf.f4 { top: 0; bottom: 0; width: var(--d); left: calc((var(--w) - var(--d)) / 2); background: var(--c2); }
+.pf.f3 { transform: rotateY(90deg) translateZ(calc(var(--w) / 2)); }
+.pf.f4 { transform: rotateY(-90deg) translateZ(calc(var(--w) / 2)); }
+.pf.top { left: 0; top: calc(var(--d) / -2); width: var(--w); height: var(--d); transform: rotateX(90deg); }
+.pf b { font: 700 2.6rem/1 "Space Grotesk", sans-serif; }
+/* Napis jest częścią przedniej ściany bloku, więc przeglądarka zawsze rysuje go we właściwej kolejności. */
+.pod-who { position: absolute; left: 0; right: 0; bottom: calc(100% + 12px); display: grid; justify-items: center; gap: 1px; text-align: center; }
+.pod-who .ic { width: 28px; height: 28px; }
+.pod-nick { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 .95rem "Space Grotesk", sans-serif; }
+.pod-nick.muted { white-space: normal; font: 600 .78rem/1.2 Inter, system-ui, sans-serif; }
+.pod-net { font-size: .82rem; font-weight: 600; background: var(--card); border: 2px solid var(--line); border-radius: 999px; padding: 0 8px; white-space: nowrap; }
+.pod.me .pod-net { background: var(--violet); color: #fff; }
+.pod-floor { position: absolute; left: -36px; right: -36px; bottom: 0; height: 150px; transform: translateY(50%) rotateX(90deg); background: #e9e6de; border: 2px solid var(--ink); border-radius: 14px; }
+@media (prefers-reduced-motion: reduce) { .pod-block { animation: none; } }
 .char.lime { background: var(--lime); }

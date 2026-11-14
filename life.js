@@ -901,7 +901,7 @@ function lifeEnd(s) {
   const sc = lifeScore(s), lessons = [...new Set(s.lessons)].slice(0, 6);
   return lifeHud(s) + `
   <div class="card lime">
-    <span class="tag">Twój wynik · całe życie</span>
+    <span class="tag">Twój wynik · od 20 do 65 lat</span>
     <div class="score" style="margin-top:10px">${sc.total}<span style="font-size:1.5rem">/100</span></div>
     <h2 style="margin-top:6px">${sc.title} ${ic(sc.ticon)}</h2>
     <p>Majątek w wieku 65 lat: <strong>${zl(sc.net)}</strong> w dzisiejszych cenach, po podatkach.</p>

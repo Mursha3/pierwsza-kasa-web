@@ -9,6 +9,22 @@ const lenLabel = m => (LENGTHS.find(l => l[0] === m) || LENGTHS[0])[1];
 const goalAmount = (goal, months) => goal.amount * months / 12;
 const shuffled = arr => arr.map(x => [Math.random(), x]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
 
+/* ---------- nick gracza (zapisany w przeglądarce, podpowiadany potem w rankingu) ---------- */
+
+ACT.saveNick = () => {
+  const el = document.getElementById('nickIn');
+  if (!el || !S || S.phase !== 'name') return;
+  const err = nickError(el.value);
+  if (err) { S.nickErr = err; S.nickDraft = el.value.slice(0, 16); render(); focusNick(); return; }
+  saveNick(cleanNick(el.value));
+  S = { phase: 'pick' };
+  render();
+  window.scrollTo(0, 0);
+};
+ACT.editNick = () => { S = { phase: 'name', nickDraft: lastNick() }; render(); focusNick(); };
+function focusNick() { const el = document.getElementById('nickIn'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'nickIn') { e.preventDefault(); ACT.saveNick(); } });
+
 /* ---------- start gry ---------- */
 
 ACT.pickChar = id => { if (CHARS.some(c => c.id === id)) { S = { phase: 'goal', charId: id, len: 12 }; render(); window.scrollTo(0, 0); } };
@@ -276,9 +292,52 @@ ACT.restart = (ask, _, el) => {
     return;
   }
   S = { phase: 'pick' };
+  clearGame();
   render();
   window.scrollTo(0, 0);
 };
+
+/* ---------- zapis gry w trakcie (tylko w tej przeglądarce) ----------
+   Po każdym ruchu stan gry trafia do localStorage, więc odświeżenie strony nie kasuje rozgrywki.
+   Postać, cel i zdarzenie zapisują się jako identyfikatory, bo zdarzenia zawierają funkcje. */
+
+const GAME_KEY = 'ogarniamKase.game.v1';
+const GAME_CHECK = {
+  quick: { num: ['months', 'month', 'cash', 'save', 'bonds', 'etf', 'stock', 'crypto', 'debt', 'mood', 'life', 'step', 'price', 'infl', 'wage'], list: ['recurring', 'later', 'pool', 'notes', 'lessons', 'hist'] },
+  life: { num: ['age', 'cash', 'save', 'bonds', 'etf', 'ike', 'stock', 'crypto', 'ppk', 'debt', 'mood', 'life', 'step', 'years', 'totalIn', 'zus'], list: ['kids', 'recurring', 'later', 'notes', 'lessons', 'slip', 'hist', 'known'] }
+};
+
+function saveGame() {
+  try {
+    const s = S;
+    if (!s || !['event', 'budget', 'year', 'plan', 'end'].includes(s.phase)) { localStorage.removeItem(GAME_KEY); return; }
+    const out = Object.assign({}, s, { event: s.event ? s.event.id : null, ranking: false });
+    if (s.mode !== 'life') Object.assign(out, { c: s.c.id, goal: s.goal.id });
+    localStorage.setItem(GAME_KEY, JSON.stringify(out));
+  } catch (err) { /* tryb prywatny albo brak miejsca */ }
+}
+function clearGame() { try { localStorage.removeItem(GAME_KEY); } catch (err) { /* nic */ } }
+
+function loadGame() {
+  try {
+    const d = JSON.parse(localStorage.getItem(GAME_KEY) || 'null');
+    if (!d || typeof d !== 'object' || !['event', 'budget', 'year', 'plan', 'end'].includes(d.phase)) return null;
+    const life = d.mode === 'life', check = GAME_CHECK[life ? 'life' : 'quick'];
+    if (!check.num.every(k => Number.isFinite(d[k])) || !check.list.every(k => Array.isArray(d[k]))) return null;
+    if (!d.basis || typeof d.basis !== 'object' || [...d.notes, ...d.lessons].some(x => typeof x !== 'string')) return null;
+    const pool = life ? L_EVENTS : EVENTS;
+    const event = d.event === null ? null : pool.find(x => x.id === d.event);
+    if (event === undefined || (d.phase === 'event' && !event)) return null;
+    if (life) {
+      if (d.age < L_START || d.age > L_END + 1 || !L_LIFE[d.life] || !HOMES[d.home]) return null;
+      return Object.assign(d, { event });
+    }
+    const c = CHARS.find(x => x.id === d.c), goal = GOALS.find(x => x.id === d.goal);
+    if (!c || !goal || d.month < 1 || d.month > d.months || !LIFE[d.life]) return null;
+    if (d.phase === 'year' && (!d.year || typeof d.year !== 'object')) return null;
+    return Object.assign(d, { c, goal, event });
+  } catch (err) { return null; }
+}
 
 /* ---------- wynik ---------- */
 
@@ -371,8 +430,21 @@ function resultCard(r, act, label) {
 function viewGame() {
   const s = S;
   if (s.mode === 'life') return viewLife(s);
+  if (s.phase === 'name') {
+    const draft = s.nickDraft !== undefined ? s.nickDraft : lastNick();
+    return `<div class="card nick-card">
+      <span class="tag violet">${ic('user')} Twój nick</span>
+      <h2 style="margin-top:12px">Jak się nazywasz?</h2>
+      <p class="muted">Pod tym nickiem zapiszesz się w rankingu. Nie wpisuj imienia i nazwiska.</p>
+      <label class="field">Nick (2–16 znaków: litery, cyfry, spacja, _ . -)
+        <input type="text" id="nickIn" maxlength="16" autocomplete="nickname" spellcheck="false" value="${esc(draft || '')}" placeholder="np. KasaMistrz"></label>
+      <p class="small neg" role="alert" style="min-height:1.4em">${s.nickErr ? esc(s.nickErr) : ''}</p>
+      <div class="row"><button class="btn primary" data-act="saveNick">Dalej →</button>${lastNick() ? '<button class="btn" data-act="restart">Anuluj</button>' : ''}</div>
+    </div>`;
+  }
   if (s.phase === 'pick') {
-    return `<h2>Całe życie</h2><p class="muted">Od studenta do emerytury. Jedna tura to jeden rok, a decyzji jest więcej: kariera, mieszkanie, rodzina i odkładanie na starość.</p>
+    return `<div class="row between nick-bar"><span>${ic('user')} Grasz jako <strong>${esc(lastNick() || 'gość')}</strong></span><button class="chip" data-act="editNick">${lastNick() ? 'Zmień nick' : 'Ustaw nick'}</button></div>
+    <h2>Od 20 do 65 lat</h2><p class="muted">Od studenta do emerytury. Jedna tura to jeden rok, a decyzji jest więcej: kariera, mieszkanie, rodzina i odkładanie na starość.</p>
     <div class="chars" style="margin-bottom:26px">
       <button class="card char lime" data-act="startLife">
         <span class="face">${ic('calendar')}</span>
@@ -591,7 +663,7 @@ function viewEnd(s) {
 ACT.share = () => {
   const life = S.mode === 'life', sc = life ? lifeScore(S) : scoreOf(S);
   const text = life
-    ? `Ogarniam Kasę (całe życie): w wieku 65 lat mam ${zl(sc.net)} i wynik ${sc.total}/100 (${sc.title}). Dasz radę lepiej?`
+    ? `Ogarniam Kasę (od 20 do 65 lat): w wieku 65 lat mam ${zl(sc.net)} i wynik ${sc.total}/100 (${sc.title}). Dasz radę lepiej?`
     : `Ogarniam Kasę (${lenLabel(S.months)}): mam ${zl(netWorth(S))} i wynik ${sc.total}/100 (${sc.title}). Dasz radę lepiej?`;
   const url = location.protocol === 'https:' ? location.origin + location.pathname : '';
   const msg = document.getElementById('shareMsg');

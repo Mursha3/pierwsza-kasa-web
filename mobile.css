@@ -131,8 +131,18 @@ details.card .body { padding: 0 12px 12px; }
 .out { font-size: 1.35rem; }
 .glossary dd { font-size: .86rem; }
 
-/* ranking: na wąskim ekranie cztery pozycje menu się nie mieszczą, więc Ranking jest tylko na stronie głównej i na ekranie wyniku */
-@media (max-width: 480px) { nav button[data-arg="rank"] { display: none; } }
-.rank { font-size: .82rem; }
-.rank th:last-child, .rank td:last-child { display: none; }
+/* ranking: żeby cztery pozycje menu zmieściły się na wąskim ekranie, w logo zostaje sama moneta */
+@media (max-width: 480px) {
+  .logo > span:last-child { display: none; }
+  nav button { padding: 5px 7px; font-size: .8rem; }
+}
+.podium-scene { height: 250px; padding-bottom: 26px; }
+.podium { --w: 84px; --d: 56px; gap: 12px; }
+.p1 { --h: 118px; } .p2 { --h: 84px; } .p3 { --h: 60px; }
+.pf b { font-size: 2rem; }
+.pod-nick { font-size: .8rem; }
+.pod-net { font-size: .74rem; }
+.rank-list li { grid-template-columns: 30px minmax(0, 1fr) auto; padding: 8px 2px; font-size: .88rem; }
+.rank-list .rs { display: none; }
+.nick-bar { font-size: .86rem; padding: 6px 10px; }
 .hud-bars .mood.wide { grid-column: 1 / -1; }

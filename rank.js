@@ -19,7 +19,8 @@ const cleanNick = v => String(v || '').replace(/[^\p{L}\p{N} _.-]/gu, '').replac
 function nickError(v) {
   const n = cleanNick(v);
   if (n.length < 2) return 'Nick musi mieć co najmniej 2 znaki: litery albo cyfry.';
-  if (typeof NICK_FILTER === 'object' && NICK_FILTER.bad(n)) return 'Ten nick wygląda na wulgarny. Wybierz inny.';
+  // Sprawdzany jest też nick w postaci wpisanej, zanim znikną z niego znaki: „sh!t” to wtedy „shit”, a nie „sht”.
+  if (typeof NICK_FILTER === 'object' && (NICK_FILTER.bad(n) || NICK_FILTER.bad(v))) return 'Ten nick wygląda na wulgarny. Wybierz inny.';
   return '';
 }
 function lastNick() { try { return cleanNick(localStorage.getItem(NICK_KEY)); } catch (err) { return ''; } }

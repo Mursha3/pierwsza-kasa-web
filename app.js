@@ -86,6 +86,8 @@ function go(v) {
   if (v === 'challenge') { chSel = 0; chMsg = ''; }
   render();
   window.scrollTo(0, 0);
+  // Licznik wejść (stats.js): która zakładka została otwarta.
+  if (typeof statsView === 'function') statsView(v);
 }
 ACT.go = go;
 

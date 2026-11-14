@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Zabezpieczenia: strona ładuje tylko własne skrypty, łączy się wyłącznie z bazą wspólnego rankingu (Supabase) i nie wysyła formularzy. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://bvxfunfdbkthfjqxnskw.supabase.co; form-action 'none'; base-uri 'none'; object-src 'none'">
+<!-- Zabezpieczenia: strona ładuje tylko własne skrypty, łączy się wyłącznie z bazą wspólnego rankingu (Supabase) i licznikiem wejść (Umami) i nie wysyła formularzy. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://bvxfunfdbkthfjqxnskw.supabase.co https://gateway.umami.is; form-action 'none'; base-uri 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Ogarniam Kasę – symulator finansowego życia</title>
 <meta name="description" content="Przeżyj rok albo całe dorosłe życie w kilkanaście minut. Wypłata, oszczędzanie, pułapki i scamy – bez ściemy.">
@@ -12,9 +12,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <!-- Numer wersji (?v=) zmieniaj przy każdej aktualizacji, żeby przeglądarki nie mieszały starych i nowych plików. -->
-<link rel="stylesheet" href="styles.css?v=16">
+<link rel="stylesheet" href="styles.css?v=17">
 <!-- Poprawki tylko na telefon: plik działa wyłącznie przy szerokości do 600 px. -->
-<link rel="stylesheet" href="mobile.css?v=16" media="(max-width: 600px)">
+<link rel="stylesheet" href="mobile.css?v=17" media="(max-width: 600px)">
 </head>
 <body>
 <header class="top">
@@ -34,7 +34,7 @@
 
 <footer>
   <p><strong>To edukacja, a nie porada inwestycyjna.</strong> Kwoty i stawki w grze są przybliżone i uproszczone.</p>
-  <p><strong>Prywatność:</strong> bez ciasteczek i śledzenia. Postęp, odznaki i nick zapisują się w Twojej przeglądarce. Po kliknięciu „Zapisz wynik” do rankingu trafiają tylko nick, wynik i losowy identyfikator urządzenia.</p>
+  <p><strong>Prywatność:</strong> bez ciasteczek i śledzenia. Postęp, odznaki i nick zapisują się w Twojej przeglądarce. Po kliknięciu „Zapisz wynik” do rankingu trafiają tylko nick, wynik i losowy identyfikator urządzenia. Wejścia i otwierane zakładki liczy Umami, bez ciasteczek i bez danych osobowych.</p>
   <p>Źródła i pomoc:
     <a href="https://www.podatki.gov.pl" target="_blank" rel="noopener noreferrer">podatki.gov.pl</a> ·
     <a href="https://www.zus.pl" target="_blank" rel="noopener noreferrer">zus.pl</a> ·
@@ -45,15 +45,16 @@
 </footer>
 
 <noscript><p style="padding:16px">Ta strona potrzebuje włączonej obsługi JavaScript.</p></noscript>
-<script src="icons.js?v=16"></script>
-<script src="data.js?v=16"></script>
-<script src="data-extra.js?v=16"></script>
-<script src="lessons.js?v=16"></script>
-<script src="app.js?v=16"></script>
-<script src="ranking-config.js?v=16"></script>
-<script src="rank.js?v=16"></script>
-<script src="challenge.js?v=16"></script>
-<script src="life.js?v=16"></script>
-<script src="game.js?v=16"></script>
+<script src="icons.js?v=17"></script>
+<script src="data.js?v=17"></script>
+<script src="data-extra.js?v=17"></script>
+<script src="lessons.js?v=17"></script>
+<script src="app.js?v=17"></script>
+<script src="ranking-config.js?v=17"></script>
+<script src="rank.js?v=17"></script>
+<script src="challenge.js?v=17"></script>
+<script src="life.js?v=17"></script>
+<script src="game.js?v=17"></script>
+<script src="stats.js?v=17"></script>
 </body>
 </html>

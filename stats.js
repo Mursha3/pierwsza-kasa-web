@@ -11,6 +11,8 @@
 // Przy zmianie adresu wysyłki popraw też connect-src w index.html (Content-Security-Policy).
 const STATS_ID = 'fff5f31b-3f86-47f0-ba46-daeba6bf015e';
 const STATS_URL = 'https://gateway.umami.is/api/send';
+// Najwyżej tyle zapytań z jednego otwarcia strony (zabezpieczenie, gdyby jakiś błąd wysyłał je w kółko).
+const STATS_MAX = 200;
 // Każda zakładka ma w statystykach własny adres, więc widać, co ludzie otwierają.
 // Adresy nie zależą od domeny, więc po przejściu na własną domenę statystyki dalej są w jednym miejscu.
 const STATS_PAGES = {
@@ -26,11 +28,12 @@ const statsView = (() => {
   const off = disabled || navigator.webdriver
     || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(STATS_ID)
     || location.protocol !== 'https:' || host === 'localhost' || host === '127.0.0.1' || host.endsWith('.localhost') || host.endsWith('.test');
-  let last = '', cache = '';
+  let last = '', cache = '', sent = 0;
   let ref = document.referrer && !document.referrer.startsWith(location.origin) ? document.referrer : '';
   return v => {
     const page = STATS_PAGES[v];
-    if (off || !page || page[0] === last) return;
+    if (off || !page || page[0] === last || sent >= STATS_MAX) return;
+    sent++;
     const payload = {
       website: STATS_ID, hostname: host, url: location.origin + page[0], title: `${page[1]} – Ogarniam Kasę`,
       // Przy pierwszym wejściu strona, z której ktoś przyszedł, potem poprzednia zakładka.

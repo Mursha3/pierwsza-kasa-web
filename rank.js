@@ -15,13 +15,11 @@ const ONLINE = /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(CFG.url) && typeof CF
 
 // Tylko litery, cyfry, spacja i kilka znaków. Ten sam zestaw sprawdza baza (supabase.sql).
 const cleanNick = v => String(v || '').replace(/[^\p{L}\p{N} _.-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 16);
-const NICK_BAN = ['kurw', 'chuj', 'huj', 'pizd', 'jeb', 'pierdol', 'fiut', 'kutas', 'dziwk', 'szmat', 'pedal', 'cwel', 'spierd', 'fuck', 'shit', 'bitch', 'nigg', 'hitler', 'nazi'];
+// Wulgarne nicki (po polsku i po angielsku) wyłapuje nickfilter.js; to samo sprawdza baza (supabase.sql).
 function nickError(v) {
   const n = cleanNick(v);
   if (n.length < 2) return 'Nick musi mieć co najmniej 2 znaki: litery albo cyfry.';
-  const flat = n.toLowerCase().replace(/[01345@$7]/g, c => ({ 0: 'o', 1: 'i', 3: 'e', 4: 'a', 5: 's', '@': 'a', $: 's', 7: 't' })[c])
-    .replace(/ł/g, 'l').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z]/g, '');
-  if (NICK_BAN.some(w => flat.includes(w))) return 'Wybierz inny nick, ten nie przejdzie w rankingu.';
+  if (typeof NICK_FILTER === 'object' && NICK_FILTER.bad(n)) return 'Ten nick wygląda na wulgarny. Wybierz inny.';
   return '';
 }
 function lastNick() { try { return cleanNick(localStorage.getItem(NICK_KEY)); } catch (err) { return ''; } }
@@ -76,7 +74,7 @@ const RANK = {
     } catch (err) { return []; }
   },
   save(list) { try { localStorage.setItem(RANK_KEY, JSON.stringify(list)); } catch (err) { /* tryb prywatny */ } },
-  list(mode) { return bestOnly(this.all().filter(e => e.mode === mode), e => e.nick.toLowerCase(), mode); },
+  list(mode) { return bestOnly(this.all().filter(e => e.mode === mode && !nickError(e.nick)), e => e.nick.toLowerCase(), mode); },
   // Dodaje wynik i zwraca miejsce gracza w rankingu danego trybu.
   add(nick, mode, score, net, postac) {
     const entry = { id: Date.now() + '-' + Math.floor(Math.random() * 1e6), nick: cleanNick(nick), mode: String(mode), score, net: Math.round(net), at: Date.now(), postac: okChar(postac) };
@@ -91,6 +89,30 @@ const RANK = {
 
 /* ---------- wspólny ranking w bazie Supabase ---------- */
 
+/* Ochrona przed zalewaniem bazy zapytaniami (razem z limitami w supabase.sql):
+   - pobrana lista trybu jest pamiętana przez 30 s, więc klikanie po zakładkach nie wysyła kolejnych zapytań,
+   - po błędzie połączenia strona przez 20 s nie próbuje znowu i pokazuje ostatnią listę albo ranking z urządzenia,
+   - zapytanie, na które baza nie odpowiada przez 8 s, jest przerywane,
+   - z jednej przeglądarki można zapisać wynik najwyżej raz na 15 s. */
+const RANK_TTL = 30000, RANK_PAUSE = 20000, RANK_SAVE_GAP = 15000, NET_TIMEOUT = 8000;
+const rankCache = {};
+let rankPauseUntil = 0, lastSaveAt = 0;
+
+async function netFetch(url, opts) {
+  const ctrl = window.AbortController ? new AbortController() : null;
+  const timer = setTimeout(() => ctrl && ctrl.abort(), NET_TIMEOUT);
+  try {
+    const r = await fetch(url, Object.assign({ credentials: 'omit', referrerPolicy: 'no-referrer', signal: ctrl ? ctrl.signal : undefined }, opts));
+    if (!r.ok) {
+      const err = new Error('HTTP ' + r.status);
+      err.status = r.status;
+      try { err.msg = String((await r.json()).message || ''); } catch (e) { err.msg = ''; }
+      throw err;
+    }
+    return r;
+  } finally { clearTimeout(timer); }
+}
+
 const RANK_NET = {
   head(extra) {
     // Nowe klucze Supabase (sb_publishable_…) idą tylko w nagłówku apikey, starsze klucze anon także jako Bearer.
@@ -101,8 +123,7 @@ const RANK_NET = {
   async list(mode) {
     const order = byPoints(mode) ? 'score.desc,net.desc' : 'net.desc,score.desc';
     const url = `${CFG.url}/rest/v1/ranking_top?mode=eq.${encodeURIComponent(mode)}&select=player,nick,net,score,postac,created_at&order=${order}&limit=${RANK_LIMIT}`;
-    const r = await fetch(url, { headers: this.head(), cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const r = await netFetch(url, { headers: this.head(), cache: 'no-store' });
     const d = await r.json();
     if (!Array.isArray(d)) throw new Error('zła odpowiedź');
     // Dane z bazy też są sprawdzane: wpis z dziwnym nickiem albo kwotą po prostu się nie pokaże.
@@ -113,11 +134,7 @@ const RANK_NET = {
     }).filter(Boolean).sort(rankCmp(mode));
   },
   async add(e) {
-    const r = await fetch(`${CFG.url}/rest/v1/ranking`, {
-      method: 'POST', headers: this.head({ Prefer: 'return=minimal' }), credentials: 'omit', referrerPolicy: 'no-referrer',
-      body: JSON.stringify(e)
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    await netFetch(`${CFG.url}/rest/v1/ranking`, { method: 'POST', headers: this.head({ Prefer: 'return=minimal' }), body: JSON.stringify(e) });
   }
 };
 
@@ -125,12 +142,16 @@ let rankMode = 'life', rankNew = '', rankShow = RANK_PAGE, rankData = { mode: ''
 
 function refreshRank() {
   if (!ONLINE) return;
-  const mode = rankMode, before = rankData.mode === mode ? rankData.rows : [];
+  const mode = rankMode, hit = rankCache[mode];
+  // Świeża lista z pamięci albo przerwa po błędzie: bez nowego zapytania do bazy.
+  if (hit && Date.now() - hit.t < RANK_TTL) { rankData = { mode, rows: hit.rows, status: 'online' }; return; }
+  if (Date.now() < rankPauseUntil) { rankData = hit ? { mode, rows: hit.rows, status: 'online' } : { mode, rows: [], status: 'error' }; return; }
+  const before = rankData.mode === mode ? rankData.rows : [];
   rankData = { mode, rows: before, status: 'loading' };
   RANK_NET.list(mode)
     // Odpowiedź dla trybu, z którego gracz już przeszedł dalej, jest pomijana.
-    .then(rows => { if (rankMode === mode) rankData = { mode, rows, status: 'online' }; })
-    .catch(() => { if (rankMode === mode) rankData = { mode, rows: [], status: 'error' }; })
+    .then(rows => { rankCache[mode] = { rows, t: Date.now() }; if (rankMode === mode) rankData = { mode, rows, status: 'online' }; })
+    .catch(() => { rankPauseUntil = Date.now() + RANK_PAUSE; if (rankMode === mode) rankData = { mode, rows: [], status: 'error' }; })
     .finally(() => {
       if (view !== 'rank' || rankMode !== mode) return;
       // Gdy wyniki się nie zmieniły, strona zostaje jak jest i podium nie wjeżdża drugi raz.
@@ -153,13 +174,20 @@ function isMe(e, online) {
 
 /* ---------- formularz na ekranie wyniku ---------- */
 
+// Dlaczego wynik nie trafił do wspólnego rankingu (baza odpowiada komunikatem z supabase.sql).
+const RANK_FAIL = {
+  net: 'Nie udało się połączyć ze wspólnym rankingiem, więc wynik zapisał się tylko na tym urządzeniu.',
+  busy: 'Wspólny ranking przyjmuje teraz za dużo wyników naraz, więc ten zapisał się tylko na tym urządzeniu.',
+  nick: 'Wspólny ranking nie przyjął tego nicku, więc wynik zapisał się tylko na tym urządzeniu.'
+};
+
 function rankForm(s, mode) {
   const label = (RANK_MODES.find(m => m[0] === String(mode)) || ['', ''])[1];
   if (s.ranked) {
     const where = s.ranked.where === 'online' ? 'we wspólnym rankingu' : 'w rankingu na tym urządzeniu';
     return `<div class="card"><h3>${ic('trophy')} Ranking</h3>
       <p>${s.ranked.place ? `Twój najlepszy wynik jest na <strong>${s.ranked.place}. miejscu</strong> ${where} („${label}”).` : `Wynik zapisany ${where}.`}</p>
-      ${s.ranked.failed ? '<p class="small neg">Nie udało się połączyć ze wspólnym rankingiem, więc wynik zapisał się tylko na tym urządzeniu.</p>' : ''}
+      ${s.ranked.failed ? `<p class="small neg">${RANK_FAIL[s.ranked.failed] || RANK_FAIL.net}</p>` : ''}
       <button class="btn" data-act="go" data-arg="rank">Zobacz ranking →</button></div>`;
   }
   return `<div class="card"><h3>${ic('trophy')} Dodaj wynik do rankingu</h3>
@@ -174,6 +202,7 @@ ACT.rankSave = mode => {
   if (!s || s.phase !== 'end' || s.ranked || s.ranking || !input) return;
   const err = nickError(input.value);
   if (err) { document.getElementById('nickMsg').textContent = err; return; }
+  if (ONLINE && Date.now() - lastSaveAt < RANK_SAVE_GAP) { document.getElementById('nickMsg').textContent = 'Za szybko. Spróbuj ponownie za kilka sekund.'; return; }
   const nick = cleanNick(input.value), m = String(mode);
   const life = s.mode === 'life', score = life ? lifeScore(s) : scoreOf(s), net = life ? score.net : netWorth(s);
   saveNick(nick);
@@ -181,15 +210,16 @@ ACT.rankSave = mode => {
   const local = RANK.add(nick, m, score.total, net, postac);
   rankMode = m; rankNew = local.id;
   if (!ONLINE) { s.ranked = { place: local.place, where: 'local' }; render(); return; }
-  s.ranking = true;
+  s.ranking = true; lastSaveAt = Date.now();
   render();
   RANK_NET.add(Object.assign({ player: myPlayer(), nick, mode: m, net: Math.round(net), score: score.total }, postac ? { postac } : {}))
     .then(() => RANK_NET.list(m))
     .then(rows => {
+      rankCache[m] = { rows, t: Date.now() };
       rankData = { mode: m, rows, status: 'online' };
       s.ranked = { place: rows.findIndex(r => isMe(r, true)) + 1, where: 'online' };
     })
-    .catch(() => { s.ranked = { place: local.place, where: 'local', failed: true }; })
+    .catch(e => { const m2 = e.msg || ''; s.ranked = { place: local.place, where: 'local', failed: /Za dużo/.test(m2) ? 'busy' : /nick/i.test(m2) ? 'nick' : 'net' }; })
     .finally(() => { s.ranking = false; if (view === 'game' && S === s) render(); });
 };
 

@@ -1399,6 +1399,10 @@ const I18N_EN = {
   "magister": "master's degree",
   "# latach": "# years",
   "# roku": "# year",
+  "Ten nick wygląda na wulgarny. Wybierz inny.": "This nickname looks offensive. Please choose another one.",
+  "Za szybko. Spróbuj ponownie za kilka sekund.": "Too fast. Try again in a few seconds.",
+  "Wspólny ranking przyjmuje teraz za dużo wyników naraz, więc ten zapisał się tylko na tym urządzeniu.": "The shared leaderboard is getting too many scores at once right now, so this one was saved only on this device.",
+  "Wspólny ranking nie przyjął tego nicku, więc wynik zapisał się tylko na tym urządzeniu.": "The shared leaderboard didn't accept this nickname, so your score was saved only on this device.",
 
   // app.js
   "Codziennie jedno małe zadanie z Twoimi prawdziwymi pieniędzmi.": "One small task a day with your real money.",

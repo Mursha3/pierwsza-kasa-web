@@ -30,8 +30,8 @@ const insured = (s, amount) => { if (s.ins) { s.insUsed = true; return Math.roun
 {
   const k = EVENTS.find(e => e.id === 'krach');
   k.cond = s => s.etf + s.stock >= 200;
-  k.pre = s => { s.etf *= 0.85; s.stock *= 0.8; };
-  k.text = 'Nagłówki krzyczą o panice. Twój ETF stracił w tym miesiącu 15%, a akcje 20%.';
+  k.pre = s => { s.crashLoss = s.etf * 0.15 + s.stock * 0.2; s.etf *= 0.85; s.stock *= 0.8; };
+  k.text = s => `Nagłówki krzyczą o panice. Twój ETF stracił w tym miesiącu 15%, a akcje 20%. Razem to ${zl(s.crashLoss || 0)} mniej.`;
   k.choices[0].run = s => { s.cash += s.etf + s.stock; s.etf = 0; s.stock = 0; return ['Sprzedałeś ze stratą. Pieniądze wróciły na konto.', 'Sprzedaż w panice zamienia chwilowy spadek w trwałą stratę. Historycznie szerokie rynki odrabiały spadki, ale trwało to czasem lata.', 'bad']; };
 }
 

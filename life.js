@@ -297,8 +297,13 @@ const L_EVENTS = [
   {
     id: 'krach', every: 10, icon: 'chartdown', title: 'Krach na giełdzie',
     cond: s => s.etf + s.ike + s.stock >= 5000,
-    pre: s => { s.gains -= 0.3 * (s.etf + s.ike) + 0.35 * s.stock + 0.18 * s.ppk; s.etf *= 0.7; s.ike *= 0.7; s.stock *= 0.65; s.ppk *= 0.82; s.rebound = 2; },
-    text: 'Światowe giełdy spadły o 30%. W wiadomościach mówi się o końcu świata, a Twoje inwestycje mocno schudły.',
+    pre: s => {
+      const loss = 0.3 * (s.etf + s.ike) + 0.35 * s.stock + 0.18 * s.ppk;
+      s.crashLoss = loss; s.gains -= loss;
+      s.etf *= 0.7; s.ike *= 0.7; s.stock *= 0.65; s.ppk *= 0.82; s.rebound = 2;
+    },
+    // Zyski w podsumowaniu wyżej dotyczą zeszłego roku, a krach dzieje się teraz, więc tekst podaje stratę wprost.
+    text: s => `Na początku tego roku światowe giełdy spadły o 30%. Zyski z zeszłego roku widzisz w podsumowaniu wyżej, ale teraz Twoje ETF, akcje i PPK są warte o <strong>${zl(s.crashLoss || 0)}</strong> mniej. W wiadomościach mówi się o końcu świata.`,
     choices: [
       { label: 'Sprzedaję ETF i akcje, zanim spadnie bardziej', run: s => { s.cash += s.etf + s.stock; s.etf = 0; s.stock = 0; s.basis.etf = 0; s.basis.stock = 0; return ['Sprzedałeś ze stratą. Pieniądze leżą na koncie.', 'Sprzedaż w panice zamienia chwilowy spadek w trwałą stratę. Szerokie rynki dotąd zawsze odrabiały spadki, choć czasem trwało to lata.', 'bad']; } },
       { label: 'Nic nie robię, mam czas', run: s => { s.heldCrash = true; return ['Zostawiasz inwestycje w spokoju.', 'Przy horyzoncie 20–30 lat krach jest tylko gorszym rokiem na wykresie.', 'good']; } },
@@ -885,7 +890,7 @@ function viewLife(s) {
         <p style="margin:10px 0">Studiujesz i dorabiasz. Przed Tobą 45 lat decyzji: praca, mieszkanie, rodzina, inwestycje i emerytura. Jedna tura to jeden rok.</p>${slip}</div>`
     : `<div class="card flat"><span class="tag">Nowy rok · ${lata(s.age)}</span>
         <div style="margin-top:8px">${slip}</div>
-        ${s.notes.length ? `<ul class="notes" style="margin-top:10px">${s.notes.map(n => `<li>${n}</li>`).join('')}</ul>` : ''}</div>`;
+        ${s.notes.length ? `<p class="small" style="margin:12px 0 0"><strong>Jak poszło w zeszłym roku</strong></p><ul class="notes" style="margin-top:4px">${s.notes.map(n => `<li>${n}</li>`).join('')}</ul>` : ''}</div>`;
   const body = s.result
     ? resultCard(s.result, 'lToPlan', 'Dalej: plan roku →')
     : `<div class="stack">${e.choices.map((c, i) => {

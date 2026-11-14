@@ -45,11 +45,18 @@ const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;'
 
 /* ---------- ranking w tej przeglądarce ---------- */
 
-const byMoney = (a, b) => b.net - a.net || b.score - a.score || a.at - b.at;
+// Od 20 do 65 lat wszyscy startują tak samo, więc liczy się majątek. W szybkiej grze postacie mają różne
+// zarobki i różną kasę na start, więc liczą się punkty 0–100, które biorą to pod uwagę (scoreOf w game.js).
+const byPoints = mode => String(mode) !== 'life';
+const rankCmp = mode => (byPoints(mode)
+  ? (a, b) => b.score - a.score || b.net - a.net || a.at - b.at
+  : (a, b) => b.net - a.net || b.score - a.score || a.at - b.at);
+const okChar = id => (CHARS.some(c => c.id === id) ? id : null);
+const charIcon = id => { const c = CHARS.find(x => x.id === id); return c ? ic(c.face) : ''; };
 // Jeden wpis na gracza: jego najlepszy wynik.
-function bestOnly(list, key) {
+function bestOnly(list, key, mode) {
   const seen = new Set();
-  return list.slice().sort(byMoney).filter(e => { const k = key(e); if (seen.has(k)) return false; seen.add(k); return true; });
+  return list.slice().sort(rankCmp(mode)).filter(e => { const k = key(e); if (seen.has(k)) return false; seen.add(k); return true; });
 }
 
 const RANK = {
@@ -62,17 +69,17 @@ const RANK = {
         const nick = cleanNick(e.nick), mode = String(e.mode);
         if (!nick || !RANK_MODES.some(m => m[0] === mode)) return null;
         if (!Number.isFinite(e.score) || !Number.isFinite(e.net) || !Number.isFinite(e.at)) return null;
-        return { id: String(e.id).slice(0, 40), nick, mode, score: clamp(Math.round(e.score), 0, 100), net: Math.round(e.net), at: e.at };
+        return { id: String(e.id).slice(0, 40), nick, mode, score: clamp(Math.round(e.score), 0, 100), net: Math.round(e.net), at: e.at, postac: okChar(e.postac) };
       }).filter(Boolean);
     } catch (err) { return []; }
   },
   save(list) { try { localStorage.setItem(RANK_KEY, JSON.stringify(list)); } catch (err) { /* tryb prywatny */ } },
-  list(mode) { return bestOnly(this.all().filter(e => e.mode === mode), e => e.nick.toLowerCase()); },
+  list(mode) { return bestOnly(this.all().filter(e => e.mode === mode), e => e.nick.toLowerCase(), mode); },
   // Dodaje wynik i zwraca miejsce gracza w rankingu danego trybu.
-  add(nick, mode, score, net) {
-    const entry = { id: Date.now() + '-' + Math.floor(Math.random() * 1e6), nick: cleanNick(nick), mode: String(mode), score, net: Math.round(net), at: Date.now() };
+  add(nick, mode, score, net, postac) {
+    const entry = { id: Date.now() + '-' + Math.floor(Math.random() * 1e6), nick: cleanNick(nick), mode: String(mode), score, net: Math.round(net), at: Date.now(), postac: okChar(postac) };
     const others = this.all().filter(e => e.mode !== entry.mode);
-    const mine = this.all().filter(e => e.mode === entry.mode).concat(entry).sort(byMoney).slice(0, 200);
+    const mine = this.all().filter(e => e.mode === entry.mode).concat(entry).sort(rankCmp(entry.mode)).slice(0, 200);
     this.save(others.concat(mine));
     const place = this.list(entry.mode).findIndex(e => e.nick.toLowerCase() === entry.nick.toLowerCase()) + 1;
     return { id: entry.id, place };
@@ -90,7 +97,8 @@ const RANK_NET = {
     return Object.assign(h, extra);
   },
   async list(mode) {
-    const url = `${CFG.url}/rest/v1/ranking_top?mode=eq.${encodeURIComponent(mode)}&select=player,nick,net,score,created_at&order=net.desc&limit=${RANK_KEEP}`;
+    const order = byPoints(mode) ? 'score.desc,net.desc' : 'net.desc,score.desc';
+    const url = `${CFG.url}/rest/v1/ranking_top?mode=eq.${encodeURIComponent(mode)}&select=player,nick,net,score,postac,created_at&order=${order}&limit=${RANK_KEEP}`;
     const r = await fetch(url, { headers: this.head(), cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
@@ -99,8 +107,8 @@ const RANK_NET = {
     return d.map(e => {
       const nick = cleanNick(e && e.nick);
       if (!nick || nickError(nick) || !Number.isFinite(e.net) || !Number.isFinite(e.score)) return null;
-      return { player: String(e.player), nick, net: Math.round(e.net), score: clamp(Math.round(e.score), 0, 100), at: Date.parse(e.created_at) || 0 };
-    }).filter(Boolean).sort(byMoney);
+      return { player: String(e.player), nick, net: Math.round(e.net), score: clamp(Math.round(e.score), 0, 100), at: Date.parse(e.created_at) || 0, postac: okChar(e.postac) };
+    }).filter(Boolean).sort(rankCmp(mode));
   },
   async add(e) {
     const r = await fetch(`${CFG.url}/rest/v1/ranking`, {
@@ -159,12 +167,13 @@ ACT.rankSave = mode => {
   const nick = cleanNick(input.value), m = String(mode);
   const life = s.mode === 'life', score = life ? lifeScore(s) : scoreOf(s), net = life ? score.net : netWorth(s);
   saveNick(nick);
-  const local = RANK.add(nick, m, score.total, net);
+  const postac = life ? null : s.c.id;
+  const local = RANK.add(nick, m, score.total, net, postac);
   rankMode = m; rankNew = local.id;
   if (!ONLINE) { s.ranked = { place: local.place, where: 'local' }; render(); return; }
   s.ranking = true;
   render();
-  RANK_NET.add({ player: myPlayer(), nick, mode: m, net: Math.round(net), score: score.total })
+  RANK_NET.add(Object.assign({ player: myPlayer(), nick, mode: m, net: Math.round(net), score: score.total }, postac ? { postac } : {}))
     .then(() => RANK_NET.list(m))
     .then(rows => {
       rankData = { mode: m, rows, status: 'online' };
@@ -187,14 +196,17 @@ ACT.rankClear = (a, b, el) => {
 
 /* ---------- widok rankingu: podium 3D i lista ---------- */
 
-function podium(rows, online) {
+// Główna wartość w rankingu: punkty w szybkiej grze, majątek w grze od 20 do 65 lat.
+const rankValue = (e, mode) => (byPoints(mode) ? `${e.score} pkt` : zl(e.net));
+
+function podium(rows, online, mode) {
   const slot = (e, place) => `
     <div class="pod p${place}${e && isMe(e, online) ? ' me' : ''}">
       <div class="pod-block"><i class="pf f1"><b>${place}</b><span class="pod-who">${e
-        ? `${place === 1 ? ic('trophy') : ''}<span class="pod-nick">${esc(e.nick)}</span><span class="pod-net">${zl(e.net)}</span>`
+        ? `${place === 1 ? ic('trophy') : ''}<span class="pod-nick">${charIcon(e.postac)}${esc(e.nick)}</span><span class="pod-net">${rankValue(e, mode)}</span>`
         : '<span class="pod-nick muted">wolne miejsce</span>'}</span></i><i class="pf f2"></i><i class="pf f3"></i><i class="pf f4"></i><i class="pf top"></i></div>
     </div>`;
-  const sr = [0, 1, 2].filter(i => rows[i]).map(i => `<li>${i + 1}. miejsce: ${esc(rows[i].nick)}, ${zl(rows[i].net)}</li>`).join('');
+  const sr = [0, 1, 2].filter(i => rows[i]).map(i => `<li>${i + 1}. miejsce: ${esc(rows[i].nick)}, ${rankValue(rows[i], mode)}</li>`).join('');
   return `<ol class="sr-only">${sr}</ol>
     <div class="podium-scene" id="podium" aria-hidden="true"><div class="podium"><div class="pod-floor"></div>${slot(rows[1], 2)}${slot(rows[0], 1)}${slot(rows[2], 3)}</div></div>`;
 }
@@ -212,14 +224,16 @@ function viewRank() {
   const loading = ONLINE && rankData.status === 'loading' && !online;
   const failed = ONLINE && rankData.status === 'error';
   const rest = rows.slice(3).map((e, i) => `
-    <li class="${isMe(e, online) ? 'me' : ''}"><span class="rk">${i + 4}.</span><span class="rn">${esc(e.nick)}</span><span class="rs small muted">${e.score}/100 pkt</span><b>${zl(e.net)}</b></li>`).join('');
+    <li class="${isMe(e, online) ? 'me' : ''}"><span class="rk">${i + 4}.</span><span class="rn">${charIcon(e.postac)}${esc(e.nick)}</span><span class="rs small muted">${byPoints(rankMode) ? zl(e.net) : `${e.score}/100 pkt`}</span><b>${rankValue(e, rankMode)}</b></li>`).join('');
   return `
   <h2>${ic('trophy')} Ranking</h2>
-  <p class="muted">Kto uzbierał najwięcej pieniędzy? Liczy się majątek na koniec gry, a każdy gracz jest na liście raz, ze swoim najlepszym wynikiem. ${online ? 'Ranking jest wspólny dla wszystkich graczy.' : 'Na razie widać tu gry z tego urządzenia.'}</p>
+  <p class="muted">${byPoints(rankMode)
+    ? 'W szybkiej grze liczą się punkty 0–100: jaką część zarobków udało się odłożyć, zadowolenie i unikanie scamów oraz długów. Dzięki temu każda postać ma równe szanse, choć startuje z inną kasą.'
+    : 'Kto uzbierał najwięcej pieniędzy? Od 20 do 65 lat wszyscy startują tak samo, więc liczy się majątek w wieku 65 lat.'} Każdy gracz jest na liście raz, ze swoim najlepszym wynikiem. ${online ? 'Ranking jest wspólny dla wszystkich graczy.' : 'Na razie widać tu gry z tego urządzenia.'}</p>
   <div class="chips" style="margin-bottom:10px">${RANK_MODES.map(([m, l]) => `<button class="chip big ${rankMode === m ? 'on' : ''}" data-act="rankMode" data-arg="${m}">${l}</button>`).join('')}</div>
   ${failed ? '<p class="flash small">Nie udało się połączyć ze wspólnym rankingiem. Pokazuję wyniki z tego urządzenia.</p>' : ''}
   ${loading ? '<div class="card"><p style="margin:0">Wczytuję ranking…</p></div>' : rows.length ? `
-    <div class="card podium-card">${podium(rows, online)}<p class="small muted center" style="margin:0">Przeciągnij, żeby obrócić podium.</p></div>
+    <div class="card podium-card">${podium(rows, online, rankMode)}<p class="small muted center" style="margin:0">Przeciągnij, żeby obrócić podium.</p></div>
     ${rest ? `<div class="card rank-card"><ol class="rank-list">${rest}</ol></div>` : ''}
     ${online ? '' : '<button class="btn sm" data-act="rankClear">Wyczyść ten ranking</button>'}`
     : `<div class="card"><p style="margin:0 0 12px">W tym trybie nikt jeszcze nie zapisał wyniku. Zagraj i dodaj swój na ekranie końcowym.</p>

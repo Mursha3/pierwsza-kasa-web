@@ -6,7 +6,7 @@ Symulator finansowego życia i lekcje o pieniądzach dla młodych. Projekt społ
 
 - **Symulator, szybka gra:** 3 postacie, własny cel oszczędnościowy, 1–3 lata miesiąc po miesiącu, losowe zdarzenia, wynik 0–100, odznaki i prognoza na 5 lat jako obracany wykres 3D.
 - **Symulator, od 20 do 65 lat:** od studenta (20 lat) do emerytury (65 lat), jedna tura to rok. Zmiana pracy i branży, studia i kursy, wynajem albo własne mieszkanie na kredyt, rodzina, PPK i IKE, a na końcu wyliczenie emerytury. Wszystkie kwoty w dzisiejszych cenach.
-- **Ranking:** kto uzbierał najwięcej pieniędzy, osobno dla każdego trybu. Podium 3D dla trzech pierwszych i lista reszty. Każdy gracz jest na liście raz, ze swoim najlepszym wynikiem. Nick wpisuje się przed grą. Bez bazy ranking jest lokalny (tylko to urządzenie), po podpięciu Supabase wspólny.
+- **Ranking:** osobno dla każdego trybu. Od 20 do 65 lat liczy się majątek (wszyscy startują tak samo), w szybkiej grze punkty 0–100, bo postacie mają różne zarobki i kasę na start; przy nicku ikona postaci. Podium 3D dla trzech pierwszych i lista reszty. Każdy gracz jest na liście raz, ze swoim najlepszym wynikiem. Nick wpisuje się przed grą. Bez bazy ranking jest lokalny (tylko to urządzenie), po podpięciu Supabase wspólny.
 - **Zapis gry:** gra w trakcie, nick, wyniki i odznaki zostają w przeglądarce po odświeżeniu strony (bez ciasteczek, przez `localStorage`).
 - **Wyzwanie 30 dni:** codziennie jedno małe zadanie z prawdziwymi pieniędzmi gracza (subskrypcje, limity BLIK, porównywanie cen, zasada 24 godzin). Nowe zadanie odblokowuje się następnego dnia, jest licznik dni z rzędu i dwie odznaki. Gracz tylko odhacza, nic nie wpisuje; postęp zostaje w przeglądarce.
 - **Scam czy nie scam?:** quiz z 8 wiadomościami.

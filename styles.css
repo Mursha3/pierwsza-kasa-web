@@ -299,3 +299,13 @@ details.card ul { padding-left: 20px; margin: 0 0 .8em; }
 /* własna kwota wpłaty i wypłaty w symulatorze */
 .amt { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 600; font-size: .9rem; }
 .amt input { font: inherit; font-size: 16px; font-weight: 700; padding: 6px 10px; border: 2px solid var(--line); border-radius: 10px; width: 130px; background: var(--card); color: inherit; }
+
+/* ranking */
+.amt input[type=text] { width: 180px; }
+.rank-card { padding: 6px 14px; overflow-x: auto; }
+.rank { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.rank th { text-align: left; font-size: .72rem; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); padding: 8px 6px; }
+.rank td { padding: 8px 6px; border-top: 1px dashed #c9c5ba; white-space: nowrap; }
+.rank td:first-child { font: 700 1rem "Space Grotesk", sans-serif; width: 28px; }
+.rank tr.me td { background: var(--lime); }
+.char.lime { background: var(--lime); }

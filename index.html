@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Ogarniam Kasę – symulator finansowego życia</title>
-<meta name="description" content="Przeżyj 12 miesięcy dorosłego życia w 10 minut. Wypłata, oszczędzanie, pułapki i scamy – bez ściemy.">
+<meta name="description" content="Przeżyj rok albo całe dorosłe życie w kilkanaście minut. Wypłata, oszczędzanie, pułapki i scamy – bez ściemy.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
@@ -24,6 +24,7 @@
     <button data-act="go" data-arg="game">Symulator</button>
     <button data-act="go" data-arg="quiz">Scam?</button>
     <button data-act="go" data-arg="lessons">Lekcje</button>
+    <button data-act="go" data-arg="rank">Ranking</button>
   </nav>
 </header>
 
@@ -31,7 +32,7 @@
 
 <footer>
   <p><strong>To edukacja, a nie porada inwestycyjna.</strong> Kwoty i stawki w grze są przybliżone i uproszczone.</p>
-  <p><strong>Prywatność:</strong> strona nie zbiera żadnych danych i nie używa ciasteczek. Wynik i odznaki zapisują się wyłącznie w Twojej przeglądarce.</p>
+  <p><strong>Prywatność:</strong> strona nie zbiera żadnych danych i nie używa ciasteczek. Wyniki, odznaki i nick z rankingu zapisują się wyłącznie w Twojej przeglądarce.</p>
   <p>Źródła i pomoc:
     <a href="https://www.podatki.gov.pl" target="_blank" rel="noopener noreferrer">podatki.gov.pl</a> ·
     <a href="https://www.zus.pl" target="_blank" rel="noopener noreferrer">zus.pl</a> ·
@@ -47,6 +48,8 @@
 <script src="data-extra.js"></script>
 <script src="lessons.js"></script>
 <script src="app.js"></script>
+<script src="rank.js"></script>
+<script src="life.js"></script>
 <script src="game.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* Ogarniam Kasę – symulator: przebieg gry, inflacja, aktywa, podsumowania. Ładowane po app.js. */
+/* Ogarniam Kasę – symulator (szybka gra na 1–3 lata; tryb „Całe życie” jest w life.js): przebieg gry, inflacja, aktywa, podsumowania. Ładowane po app.js. */
 'use strict';
 
 const val = (x, s) => (typeof x === 'function' ? x(s) : x);
@@ -370,8 +370,15 @@ function resultCard(r, act, label) {
 
 function viewGame() {
   const s = S;
+  if (s.mode === 'life') return viewLife(s);
   if (s.phase === 'pick') {
-    return `<h2>Kim grasz?</h2><p class="muted">Każda postać ma inne dochody i inne problemy.</p>
+    return `<h2>Całe życie</h2><p class="muted">Od studenta do emerytury. Jedna tura to jeden rok, a decyzji jest więcej: kariera, mieszkanie, rodzina i odkładanie na starość.</p>
+    <div class="chars" style="margin-bottom:26px">
+      <button class="card char lime" data-act="startLife">
+        <span class="face">${ic('calendar')}</span>
+        <span><h3>Od 20. do 65. roku życia</h3><span class="muted small">45 tur. Zmieniasz pracę i branżę, kupujesz mieszkanie, inwestujesz przez dekady i sprawdzasz, jaką będziesz mieć emeryturę. Ok. 20 minut.</span></span>
+      </button></div>
+    <h2>Szybka gra: kim grasz?</h2><p class="muted">Od roku do trzech lat, miesiąc po miesiącu. Każda postać ma inne dochody i inne problemy.
     <div class="chars">${CHARS.map(c => `
       <button class="card char" data-act="pickChar" data-arg="${c.id}">
         <span class="face">${ic(c.face)}</span>
@@ -492,14 +499,14 @@ function viewYear(s) {
   </div>`;
 }
 
-function histChart(s) {
+function histChart(s, step = 12) {
   const W = 300, H = 110, pad = 6, h = s.hist;
   const all = h.flatMap(p => [p.n, p.r]), lo = Math.min(...all), hi = Math.max(...all, lo + 1);
   const x = i => pad + i / Math.max(1, h.length - 1) * (W - 2 * pad);
   const y = v => H - pad - (v - lo) / (hi - lo) * (H - 2 * pad);
   const line = key => h.map((p, i) => `${x(i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(' ');
   let grid = '';
-  for (let m = 12; m < h.length - 1; m += 12) grid += `<line class="grid" x1="${x(m)}" y1="${pad}" x2="${x(m)}" y2="${H - pad}"/>`;
+  for (let m = step; m < h.length - 1; m += step) grid += `<line class="grid" x1="${x(m)}" y1="${pad}" x2="${x(m)}" y2="${H - pad}"/>`;
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${grid}
     <polyline class="nom" points="${line('n')}"/><polyline class="real" points="${line('r')}"/></svg>`;
 }
@@ -527,6 +534,8 @@ function viewEnd(s) {
     </div>
     <p class="small" id="shareMsg" style="margin:10px 0 0"></p>
   </div>
+
+  ${rankForm(s, s.months)}
 
   <div class="card">
     <h3>${ic('price')} Co zrobiła inflacja?</h3>
@@ -580,8 +589,10 @@ function viewEnd(s) {
 }
 
 ACT.share = () => {
-  const sc = scoreOf(S);
-  const text = `Ogarniam Kasę (${lenLabel(S.months)}): mam ${zl(netWorth(S))} i wynik ${sc.total}/100 (${sc.title}). Dasz radę lepiej?`;
+  const life = S.mode === 'life', sc = life ? lifeScore(S) : scoreOf(S);
+  const text = life
+    ? `Ogarniam Kasę (całe życie): w wieku 65 lat mam ${zl(sc.net)} i wynik ${sc.total}/100 (${sc.title}). Dasz radę lepiej?`
+    : `Ogarniam Kasę (${lenLabel(S.months)}): mam ${zl(netWorth(S))} i wynik ${sc.total}/100 (${sc.title}). Dasz radę lepiej?`;
   const url = location.protocol === 'https:' ? location.origin + location.pathname : '';
   const msg = document.getElementById('shareMsg');
   if (navigator.share) { navigator.share({ text, url: url || undefined }).catch(() => {}); return; }

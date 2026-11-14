@@ -130,3 +130,9 @@ details.card .body { padding: 0 12px 12px; }
 .field input[type=number] { font-size: 16px; }
 .out { font-size: 1.35rem; }
 .glossary dd { font-size: .86rem; }
+
+/* ranking: na wąskim ekranie cztery pozycje menu się nie mieszczą, więc Ranking jest tylko na stronie głównej i na ekranie wyniku */
+@media (max-width: 480px) { nav button[data-arg="rank"] { display: none; } }
+.rank { font-size: .82rem; }
+.rank th:last-child, .rank td:last-child { display: none; }
+.hud-bars .mood.wide { grid-column: 1 / -1; }

@@ -12,9 +12,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <!-- Numer wersji (?v=) zmieniaj przy każdej aktualizacji, żeby przeglądarki nie mieszały starych i nowych plików. -->
-<link rel="stylesheet" href="styles.css?v=10">
+<link rel="stylesheet" href="styles.css?v=14">
 <!-- Poprawki tylko na telefon: plik działa wyłącznie przy szerokości do 600 px. -->
-<link rel="stylesheet" href="mobile.css?v=10" media="(max-width: 600px)">
+<link rel="stylesheet" href="mobile.css?v=14" media="(max-width: 600px)">
 </head>
 <body>
 <header class="top">
@@ -22,10 +22,11 @@
     <span class="coin">zł</span><span>Ogarniam&nbsp;Kasę</span>
   </button>
   <nav>
-    <button data-act="go" data-arg="game">Symulator</button>
+    <button data-act="go" data-arg="game"><span class="nav-long">Symulator</span><span class="nav-short">Gra</span></button>
     <button data-act="go" data-arg="quiz">Scam?</button>
     <button data-act="go" data-arg="lessons">Lekcje</button>
     <button data-act="go" data-arg="rank">Ranking</button>
+    <button data-act="go" data-arg="challenge"><span class="nav-long">Wyzwanie</span><span class="nav-short">30 dni</span></button>
   </nav>
 </header>
 
@@ -33,7 +34,7 @@
 
 <footer>
   <p><strong>To edukacja, a nie porada inwestycyjna.</strong> Kwoty i stawki w grze są przybliżone i uproszczone.</p>
-  <p><strong>Prywatność:</strong> strona nie zbiera żadnych danych i nie używa ciasteczek. Wyniki, odznaki, nick i gra w trakcie zapisują się w Twojej przeglądarce. Do wspólnego rankingu trafiają tylko nick i wynik, i to dopiero po kliknięciu „Zapisz wynik”.</p>
+  <p><strong>Prywatność:</strong> bez ciasteczek i śledzenia. Postęp, odznaki i nick zapisują się w Twojej przeglądarce i czekają, aż wrócisz. Po kliknięciu „Zapisz wynik” do rankingu trafiają tylko nick, wynik i losowy identyfikator urządzenia. Czcionki ładują się z Google.</p>
   <p>Źródła i pomoc:
     <a href="https://www.podatki.gov.pl" target="_blank" rel="noopener noreferrer">podatki.gov.pl</a> ·
     <a href="https://www.zus.pl" target="_blank" rel="noopener noreferrer">zus.pl</a> ·
@@ -44,14 +45,15 @@
 </footer>
 
 <noscript><p style="padding:16px">Ta strona potrzebuje włączonej obsługi JavaScript.</p></noscript>
-<script src="icons.js?v=10"></script>
-<script src="data.js?v=10"></script>
-<script src="data-extra.js?v=10"></script>
-<script src="lessons.js?v=10"></script>
-<script src="app.js?v=10"></script>
-<script src="ranking-config.js?v=10"></script>
-<script src="rank.js?v=10"></script>
-<script src="life.js?v=10"></script>
-<script src="game.js?v=10"></script>
+<script src="icons.js?v=14"></script>
+<script src="data.js?v=14"></script>
+<script src="data-extra.js?v=14"></script>
+<script src="lessons.js?v=14"></script>
+<script src="app.js?v=14"></script>
+<script src="ranking-config.js?v=14"></script>
+<script src="rank.js?v=14"></script>
+<script src="challenge.js?v=14"></script>
+<script src="life.js?v=14"></script>
+<script src="game.js?v=14"></script>
 </body>
 </html>

@@ -649,6 +649,7 @@ function viewEnd(s) {
 
   <div class="row">
     <button class="btn primary" data-act="go" data-arg="quiz">Scam czy nie scam? →</button>
+    <button class="btn" data-act="go" data-arg="challenge">Wyzwanie 30 dni</button>
     <button class="btn" data-act="go" data-arg="lessons">Lekcje w 2 minuty</button>
   </div>`;
 }

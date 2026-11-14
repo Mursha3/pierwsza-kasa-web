@@ -49,6 +49,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 nav { display: flex; gap: 4px; }
 nav button { background: none; border: 2px solid transparent; border-radius: 999px; padding: 6px 10px; font-weight: 600; font-size: .9rem; }
 nav button:hover, nav button.on { border-color: var(--line); background: var(--card); }
+/* Krótsze napisy w menu pokazują się tylko na bardzo wąskich telefonach (mobile.css). */
+.nav-short { display: none; }
+/* Przy pięciu zakładkach na węższych ekranach w logo zostaje sama moneta. */
+@media (max-width: 640px) { .logo > span:last-child { display: none; } }
 
 main { max-width: 760px; margin: 0 auto; padding: 20px 16px 48px; }
 footer { max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; border-top: 2px solid var(--line); font-size: .85rem; }
@@ -346,3 +350,17 @@ details.card ul { padding-left: 20px; margin: 0 0 .8em; }
 .pod-floor { position: absolute; left: -36px; right: -36px; bottom: 0; height: 150px; transform: translateY(50%) rotateX(90deg); background: #e9e6de; border: 2px solid var(--ink); border-radius: 14px; }
 @media (prefers-reduced-motion: reduce) { .pod-block { animation: none; } }
 .char.lime { background: var(--lime); }
+
+/* wyzwanie 30 dni */
+.ch-top { display: grid; gap: 8px; }
+.ch-big { font: 700 1.4rem "Space Grotesk", sans-serif; }
+.ch-task h2 { margin-bottom: .4em; }
+.ch-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; max-width: 480px; }
+.ch-cell { aspect-ratio: 1; display: grid; place-items: center; padding: 0; border: 2px solid var(--line); border-radius: 12px; background: var(--card); font: 700 1.05rem "Space Grotesk", sans-serif; transition: transform .08s; }
+.ch-cell:hover:not(:disabled) { transform: translate(-1px, -1px); }
+.ch-cell.done { background: var(--lime); }
+.ch-cell.done .ic { width: 1.5em; height: 1.5em; }
+.ch-cell.today { background: var(--violet); color: #fff; box-shadow: 3px 3px 0 var(--ink); }
+.ch-cell.locked { border-style: dashed; border-color: #b9b5aa; background: transparent; color: var(--muted); cursor: default; }
+.ch-cell.sel { outline: 3px solid var(--ink); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .ch-cell { transition: none; } }

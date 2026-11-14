@@ -966,6 +966,7 @@ function lifeEnd(s) {
 
   <div class="row">
     <button class="btn primary" data-act="go" data-arg="rank">Ranking →</button>
+    <button class="btn" data-act="go" data-arg="challenge">Wyzwanie 30 dni</button>
     <button class="btn" data-act="go" data-arg="lessons">Lekcje w 2 minuty</button>
   </div>`;
 }

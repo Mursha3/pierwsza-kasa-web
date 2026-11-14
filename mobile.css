@@ -141,10 +141,17 @@ details.card .body { padding: 0 12px 12px; }
 .out { font-size: 1.35rem; }
 .glossary dd { font-size: .86rem; }
 
-/* ranking: żeby cztery pozycje menu zmieściły się na wąskim ekranie, w logo zostaje sama moneta */
+/* Menu z pięcioma zakładkami na telefonie: mniejsze przyciski (napis przy logo chowa styles.css). */
 @media (max-width: 480px) {
-  .logo > span:last-child { display: none; }
-  nav button { padding: 5px 7px; font-size: .8rem; }
+  .top { gap: 6px; }
+  nav { gap: 0; }
+  nav button { padding: 5px 6px; font-size: .76rem; }
+}
+/* Na bardzo wąskich telefonach „Symulator” i „Wyzwanie” mają krótsze napisy, żeby pięć zakładek zmieściło się w jednym rzędzie. */
+@media (max-width: 370px) {
+  .nav-long { display: none; }
+  .nav-short { display: inline; }
+  nav button { padding: 4px 5px; font-size: .74rem; }
 }
 .podium-scene { height: 250px; padding-bottom: 26px; }
 .podium { --w: 84px; --d: 56px; gap: 12px; }
@@ -165,3 +172,9 @@ details.card .body { padding: 0 12px 12px; }
   .card > [data-act="endMonth"], .card > [data-act="lEnd"] { font-size: .8rem; padding: 8px 10px; }
   .chip.big { padding: 6px 12px; font-size: .88rem; }
 }
+
+/* wyzwanie 30 dni */
+.ch-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; max-width: none; }
+.ch-cell { border-radius: 10px; font-size: .95rem; }
+.ch-big { font-size: 1.2rem; }
+.ch-top .row { font-size: .88rem; }

@@ -35,7 +35,9 @@ const BADGES = [
   { id: 'polisa', icon: 'umbrella', name: 'Ubezpieczony', desc: 'Strata pokryta z polisy' },
   { id: 'emeryt', icon: 'sun', name: 'Spokojna emerytura', desc: 'Gra od 20 do 65 lat: emerytura to co najmniej 70% pensji' },
   { id: 'milioner', icon: 'coin', name: 'Milioner', desc: 'Gra od 20 do 65 lat: majątek od miliona złotych' },
-  { id: 'dom', icon: 'key', name: 'Na swoim', desc: 'Gra od 20 do 65 lat: spłacone własne mieszkanie' }
+  { id: 'dom', icon: 'key', name: 'Na swoim', desc: 'Gra od 20 do 65 lat: spłacone własne mieszkanie' },
+  { id: 'seria', icon: 'bolt', name: 'Tydzień z rzędu', desc: 'Wyzwanie: zadania 7 dni z rzędu' },
+  { id: 'wyzwanie', icon: 'trophy', name: 'Wyzwanie 30 dni', desc: 'Wszystkie zadania wyzwania' }
 ];
 function loadStore() {
   const empty = () => ({ best: { 12: 0, 24: 0, 36: 0 }, games: 0, badges: [] });
@@ -75,12 +77,13 @@ let S = null;   // stan gry
 let Q = null;   // stan quizu
 
 function go(v) {
-  if (!['home', 'game', 'quiz', 'lessons', 'rank'].includes(v)) v = 'home';
+  if (!['home', 'game', 'quiz', 'lessons', 'rank', 'challenge'].includes(v)) v = 'home';
   view = v;
   // Gra w trakcie wraca po odświeżeniu strony. Bez zapisanej gry: najpierw nick, potem wybór postaci.
   if (v === 'game' && !S) S = loadGame() || { phase: lastNick() ? 'pick' : 'name' };
   if (v === 'quiz' && !Q) Q = { i: 0, score: 0, answered: null };
   if (v === 'rank') refreshRank();
+  if (v === 'challenge') { chSel = 0; chMsg = ''; }
   render();
   window.scrollTo(0, 0);
 }
@@ -88,7 +91,7 @@ ACT.go = go;
 
 function render() {
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.arg === view));
-  const html = { home: viewHome, game: viewGame, quiz: viewQuiz, lessons: () => viewLessons() + viewGlossary(), rank: viewRank }[view]();
+  const html = { home: viewHome, game: viewGame, quiz: viewQuiz, lessons: () => viewLessons() + viewGlossary(), rank: viewRank, challenge: viewChallenge }[view]();
   app.innerHTML = '<div class="fade">' + html + '</div>';
   if (view === 'lessons') { calcCompound(); calcPay(); calcInfl(); }
   if (view === 'home') { initCoin(); initTilt(); }
@@ -133,13 +136,14 @@ function viewHome() {
     </div>
   </section>
 
-  ${STORE.games ? `<div class="card flat stats"><span><b>${Math.max(STORE.best[12], STORE.best[24], STORE.best[36])}</b>/100 najlepszy wynik</span><span><b>${STORE.games}</b> ${STORE.games === 1 ? 'rozgrywka' : 'rozgrywek'}</span><span><b>${got}</b>/${BADGES.length} odznak</span></div>` : ''}
+  ${STORE.games || chCount() ? `<div class="card flat stats">${STORE.games ? `<span><b>${Math.max(STORE.best[12], STORE.best[24], STORE.best[36])}</b>/100 najlepszy wynik</span><span><b>${STORE.games}</b> ${STORE.games === 1 ? 'rozgrywka' : 'rozgrywek'}</span>` : ''}<span><b>${got}</b>/${BADGES.length} odznak</span>${chCount() ? `<span><b>${chCount()}</b>/${CH_DAYS} dni wyzwania</span>` : ''}</div>` : ''}
 
   <div class="tiles">
     <button class="card tilt" data-act="go" data-arg="game"><div class="emoji">${ic('gamepad')}</div><h3>Symulator</h3><p class="muted small">Szybka gra na 1–3 lata albo gra od 20 do 65 lat: od studenta do emerytury, ze zmianą pracy i kupnem mieszkania.</p></button>
     <button class="card tilt" data-act="go" data-arg="quiz"><div class="emoji">${ic('magnifier')}</div><h3>Scam czy nie scam?</h3><p class="muted small">Osiem wiadomości. Rozpoznasz, które wysłał oszust?</p></button>
     <button class="card tilt" data-act="go" data-arg="lessons"><div class="emoji">${ic('bolt')}</div><h3>Lekcje w 2 minuty</h3><p class="muted small">Brutto i netto, budżet, procent składany, długi i słowniczek.</p></button>
     <button class="card tilt" data-act="go" data-arg="rank"><div class="emoji">${ic('target')}</div><h3>Ranking</h3><p class="muted small">Najlepsze wyniki. Zapisz swój pod nickiem i sprawdź, kto ogarnia kasę najlepiej.</p></button>
+    <button class="card tilt" data-act="go" data-arg="challenge"><div class="emoji">${ic('calendar')}</div><h3>Wyzwanie 30 dni</h3><p class="muted small">Codziennie jedno małe zadanie z Twoimi prawdziwymi pieniędzmi. ${chCount() ? `Masz już ${chCount()} z ${CH_DAYS} dni.` : 'Zacznij dziś.'}</p></button>
   </div>
 
   <h2 style="margin-top:34px">Mit czy fakt?</h2>

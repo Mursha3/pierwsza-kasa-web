@@ -8,6 +8,7 @@ Symulator finansowego życia i lekcje o pieniądzach dla młodych. Projekt społ
 - **Symulator, od 20 do 65 lat:** od studenta (20 lat) do emerytury (65 lat), jedna tura to rok. Zmiana pracy i branży, studia i kursy, wynajem albo własne mieszkanie na kredyt, rodzina, PPK i IKE, a na końcu wyliczenie emerytury. Wszystkie kwoty w dzisiejszych cenach.
 - **Ranking:** kto uzbierał najwięcej pieniędzy, osobno dla każdego trybu. Podium 3D dla trzech pierwszych i lista reszty. Każdy gracz jest na liście raz, ze swoim najlepszym wynikiem. Nick wpisuje się przed grą. Bez bazy ranking jest lokalny (tylko to urządzenie), po podpięciu Supabase wspólny.
 - **Zapis gry:** gra w trakcie, nick, wyniki i odznaki zostają w przeglądarce po odświeżeniu strony (bez ciasteczek, przez `localStorage`).
+- **Wyzwanie 30 dni:** codziennie jedno małe zadanie z prawdziwymi pieniędzmi gracza (subskrypcje, limity BLIK, porównywanie cen, zasada 24 godzin). Nowe zadanie odblokowuje się następnego dnia, jest licznik dni z rzędu i dwie odznaki. Gracz tylko odhacza, nic nie wpisuje; postęp zostaje w przeglądarce.
 - **Scam czy nie scam?:** quiz z 8 wiadomościami.
 - **Lekcje w 2 minuty:** 5 tematów z kalkulatorami i słowniczek.
 - **Strona główna:** moneta 3D z ciekawostkami i karty „Mit czy fakt?”.
@@ -35,12 +36,13 @@ Potem otwórz `http://localhost:5173`.
 | `data-extra.js` | Aktywa, inflacja i dodatkowe zdarzenia szybkiej gry |
 | `game.js` | Szybka gra na 1–3 lata |
 | `life.js` | Tryb „od 20 do 65 lat”: branże, zdarzenia, mieszkanie, emerytura |
+| `challenge.js` | Wyzwanie 30 dni: lista zadań, zapis postępu, widok |
 | `rank.js` | Ranking: nick, podium 3D, lista, zapis lokalny i w Supabase |
 | `ranking-config.js` | Adres i klucz publiczny bazy Supabase (puste = ranking lokalny) |
 | `supabase.sql` | Tabela, reguły dostępu i widok rankingu do wklejenia w Supabase |
 | `mobile.css` | Poprawki wyglądu na telefon |
 
-Nowe zdarzenie dodaje się jako kolejny obiekt w tablicy `EVENTS` w `data.js`, a pytanie quizu w tablicy `QUIZ`.
+Nowe zdarzenie dodaje się jako kolejny obiekt w tablicy `EVENTS` w `data.js`, pytanie quizu w tablicy `QUIZ`, a zadanie wyzwania w `CH_TASKS` w `challenge.js`. Po każdej zmianie plików podbij numer `?v=` w `index.html`, żeby przeglądarki pobrały nową wersję.
 
 ## Wspólny ranking (Supabase)
 
@@ -57,7 +59,7 @@ Do bazy trafiają tylko losowy identyfikator urządzenia, nick, tryb, majątek i
 
 - Polityka Content Security Policy: strona uruchamia wyłącznie własne skrypty, łączy się tylko z bazą rankingu w Supabase i nie wysyła formularzy.
 - Brak kodu w atrybutach HTML i brak `eval`; wszystkie akcje przechodzą przez listę dozwolonych funkcji.
-- Brak logowania i ciasteczek. Wyniki, odznaki i gra w trakcie zapisują się w przeglądarce gracza i są sprawdzane przy odczycie. Do bazy rankingu trafiają tylko nick, wynik i losowy identyfikator urządzenia, po kliknięciu „Zapisz wynik”.
+- Brak logowania i ciasteczek. Wyniki, odznaki i gra w trakcie zapisują się w przeglądarce gracza i są sprawdzane przy odczycie. Do bazy rankingu trafiają tylko nick, wynik i losowy identyfikator urządzenia, po kliknięciu „Zapisz wynik”. Czcionki ładują się z Google Fonts, więc Google widzi adres IP odwiedzającego.
 - Linki zewnętrzne otwierają się bez przekazywania adresu strony (`noopener noreferrer`).
 
 ## Do zrobienia przed publikacją

@@ -688,6 +688,12 @@ ACT.lMove = (id, dir) => {
   render();
 };
 
+// Jedna linijka o mieszkaniu do zwiniętej na telefonie sekcji.
+function homeSummary(s) {
+  if (s.home === 'own') return `<b>Własne mieszkanie</b>, ${s.mort > 0 ? `do spłaty ${zl(s.mort)}` : 'spłacone'}`;
+  return `<b>${HOMES[s.home][0]}</b>, ${zl(lHousing(s))} miesięcznie`;
+}
+
 function lifePlan(s) {
   const av = lAvail(s), stud = lCheap(s);
   const homeRow = (id, extra) => `<div class="acct"><div><b>${ic(id === 'own' ? 'key' : 'box')} ${id === 'own' ? 'Własne mieszkanie na kredyt' : HOMES[id][0]}</b><br><span class="small muted">${extra}</span></div>
@@ -713,16 +719,14 @@ function lifePlan(s) {
       <button class="btn ${s.life === i ? 'on' : ''}" data-act="lLife" data-arg="${i}">${l[0]}<small>${zl(l[1] * stud)} / mies.</small><small>${ic(l[2] > 0 ? 'smile' : l[2] < 0 ? 'sad' : 'meh')} ${l[2] > 0 ? '+' + l[2] : l[2]}</small></button>`).join('')}</div>
     <p style="margin-top:14px">Po wydatkach na życie zostanie Ci w tym roku: <strong class="${av < 0 ? 'neg' : ''}">${zl(av)}</strong></p>
     ${av < 0 ? `<p class="small neg"><strong>Brakuje ${zl(-av)}.</strong> Wybierz tańszy styl życia albo wypłać z oszczędności. Inaczej brak pokryje drogi kredyt.</p>` : ''}
-    <h3 style="margin-top:16px">Mieszkanie</h3>
-    <p class="small muted" style="margin:0">Zmiana liczy się od przyszłego roku.</p>
-    ${housing}
-    <h3 style="margin-top:16px">Dochód i ochrona</h3>
+    ${foldBlock('home', 'Mieszkanie', homeSummary(s), `<p class="small muted" style="margin:0">Zmiana liczy się od przyszłego roku.</p>${housing}`)}
+    ${foldBlock('protect', 'Dochód i ochrona', [s.student ? '' : mark('nadgodziny', s.extra), s.student ? '' : mark('PPK', s.ppkOn), mark('ubezpieczenie', s.ins)].filter(Boolean).join(', '), `
     ${s.student ? '' : `<div class="acct"><div><b>${ic('clock')} Nadgodziny i dodatkowe zlecenia</b><br><span class="small muted">pensja wyższa o 15%, zadowolenie −5 rocznie</span></div>
       <button class="btn sm ${s.extra ? 'primary' : ''}" data-act="lToggle" data-arg="extra">${s.extra ? 'Biorę ✓' : 'Biorę'}</button></div>
     <div class="acct"><div><b>${ic('gift')} PPK</b><br><span class="small muted">oddajesz 2% pensji, a pracodawca dokłada 1,5% i państwo 240 zł rocznie · masz <b>${zl(s.ppk)}</b></span></div>
       <button class="btn sm ${s.ppkOn ? 'primary' : ''}" data-act="lToggle" data-arg="ppkOn">${s.ppkOn ? 'Jestem w PPK ✓' : 'Zapisuję się'}</button></div>`}
     <div class="acct"><div><b>${ic('umbrella')} Pakiet ubezpieczeń</b><br><span class="small muted">${zl(L_INS)} miesięcznie, pokrywa 80% kosztów choroby i szkód w mieszkaniu</span></div>
-      <button class="btn sm ${s.ins ? 'primary' : ''}" data-act="lToggle" data-arg="ins">${s.ins ? 'Mam ✓' : 'Kupuję'}</button></div>
+      <button class="btn sm ${s.ins ? 'primary' : ''}" data-act="lToggle" data-arg="ins">${s.ins ? 'Mam ✓' : 'Kupuję'}</button></div>`)}
   </div>
   <div class="card">
     <span class="tag">Pieniądze</span>
@@ -941,9 +945,10 @@ function lifeEnd(s) {
     </table>
   </div>
 
-  <div class="card">
+  <div class="card end-badges">
     <h3>Odznaki z tej rozgrywki</h3>
     ${s.fresh.length ? `<p class="small pos"><strong>Nowe odznaki: ${s.fresh.length}</strong></p>` : ''}
+    ${(s.earned || []).length ? '' : '<p class="small muted m-only" hidden>W tej grze nie zdobyłeś żadnej odznaki. Zobacz wszystkie na stronie głównej.</p>'}
     ${badgeGrid(s.earned || [], s.fresh)}
   </div>
 

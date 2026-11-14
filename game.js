@@ -490,12 +490,8 @@ function viewGame() {
   return hud(s) + viewBudget(s);
 }
 
-/* Na telefonie sekcja „Dochód i ochrona” jest zwijana (mobile.css), żeby budżet był krótszy.
-   Na komputerze przycisk i podsumowanie mają atrybut hidden, a sekcja jest zawsze widoczna. */
-let foldOpen = false;
-ACT.fold = () => { foldOpen = !foldOpen; render(); };
+// Podsumowanie zwiniętej na telefonie sekcji „Dochód i ochrona” (foldBlock w app.js).
 function foldSummary(s) {
-  const mark = (label, on) => (on ? `<b>${label} ✓</b>` : label);
   return [
     mark('dodatkowa zmiana', s.extra),
     mark('kurs', s.courseDone || s.course > 0),
@@ -530,11 +526,7 @@ function viewBudget(s) {
     ${av < 0 ? `<p class="small neg"><strong>Brakuje ${zl(-av)}.</strong> Wybierz tańszy styl życia, weź dodatkową zmianę albo wypłać z oszczędności, inaczej brak pokryje droga chwilówka.</p>` : ''}
     ${s.flash ? `<p class="flash small">${ic('info')} ${s.flash}</p>` : ''}
 
-    <div class="fold${foldOpen ? ' open' : ''}">
-      <div class="fold-head"><h3 style="margin-top:16px">Dochód i ochrona</h3><button class="chip m-only" hidden data-act="fold" aria-expanded="${foldOpen}">${foldOpen ? 'Zwiń' : 'Pokaż'}</button></div>
-      <p class="fold-sum small muted m-only" hidden>${foldSummary(s)}</p>
-      <div class="fold-body">${extras}</div>
-    </div>
+    ${foldBlock('income', 'Dochód i ochrona', foldSummary(s), extras)}
 
     <h3 style="margin-top:20px">Gdzie trzymasz pieniądze?</h3>
     <label class="amt">Kwota wpłaty lub wypłaty (zł)
@@ -624,9 +616,10 @@ function viewEnd(s) {
     </table>
   </div>
 
-  <div class="card">
+  <div class="card end-badges">
     <h3>Odznaki z tej rozgrywki</h3>
     ${s.fresh.length ? `<p class="small pos"><strong>Nowe odznaki: ${s.fresh.length}</strong></p>` : ''}
+    ${(s.earned || []).length ? '' : '<p class="small muted m-only" hidden>W tej grze nie zdobyłeś żadnej odznaki. Zobacz wszystkie na stronie głównej.</p>'}
     ${badgeGrid(s.earned || [], s.fresh)}
   </div>
 

@@ -221,6 +221,21 @@ function viewGlossary() {
   <dl class="card glossary">${GLOSSARY.map(([t, d]) => `<dt>${t}</dt><dd>${d}</dd>`).join('')}</dl>`;
 }
 
+/* ---------- zwijane sekcje na telefonie ----------
+   Na telefonie (mobile.css) sekcja jest zwinięta do jednej linijki podsumowania, dopóki gracz jej nie otworzy.
+   Na komputerze przycisk i podsumowanie mają atrybut hidden, a sekcja jest zawsze rozwinięta. */
+const FOLD = {};
+ACT.fold = key => { if (typeof key === 'string' && key.length < 20) { FOLD[key] = !FOLD[key]; render(); } };
+const mark = (label, on) => (on ? `<b>${label} ✓</b>` : label);
+function foldBlock(key, title, summary, body) {
+  const open = !!FOLD[key];
+  return `<div class="fold${open ? ' open' : ''}">
+    <div class="fold-head"><h3 style="margin-top:16px">${title}</h3><button class="chip m-only" hidden data-act="fold" data-arg="${key}" aria-expanded="${open}">${open ? 'Zwiń' : 'Pokaż'}</button></div>
+    <p class="fold-sum small muted m-only" hidden>${summary}</p>
+    <div class="fold-body">${body}</div>
+  </div>`;
+}
+
 /* ---------- 3D: obracanie przeciąganiem ---------- */
 
 const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

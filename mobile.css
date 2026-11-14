@@ -61,12 +61,12 @@ footer { padding: 14px 12px 28px; font-size: .78rem; }
 /* ---------- pasek stanu w grze ---------- */
 .hud { padding: 3px 0; }
 .hud .progress { height: 9px; }
+/* Pasek z pieniędzmi przykleja się do góry ekranu, więc jest jak najniższy: zawsze 3 kolumny, mniejsze kafelki. */
 .hud-money { padding: 4px 0 6px; }
-.money { gap: 6px; }
-.money div { padding: 3px 8px; border-radius: 10px; }
-.money span { font-size: .6rem; letter-spacing: 0; }
-.money b { font-size: .95rem; }
-.money:has(.debt) { grid-template-columns: 1fr 1fr; }
+.money { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.money div { padding: 2px 6px; border-radius: 8px; min-width: 0; }
+.money span { font-size: .56rem; line-height: 1.2; letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.money b { display: block; font-size: .86rem; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; }
 
 .hud-bars { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 12px; }
 .hud-bars .mood { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 6px; margin-top: 0; font-size: .74rem; }
@@ -109,7 +109,17 @@ footer { padding: 14px 12px 28px; font-size: .78rem; }
 .fold + h3 { margin-top: 14px !important; }
 
 /* Przycisk końca miesiąca trzyma się dołu ekranu, żeby nie trzeba było do niego przewijać. */
-.card > [data-act="endMonth"] { position: sticky; bottom: 10px; z-index: 3; margin-top: 12px !important; }
+.card > [data-act="endMonth"], .card > [data-act="lEnd"] { position: sticky; bottom: 10px; z-index: 3; margin-top: 12px !important; }
+
+/* Przyciski decyzji z dopiskiem (np. koszt): dopisek schodzi pod spód zamiast ściskać tekst. */
+.stack { gap: 6px; }
+.stack .btn { flex-wrap: wrap; column-gap: 6px; row-gap: 0; font-size: .9rem; min-height: 42px; padding: 7px 12px; }
+.stack .btn .small { font-size: .78rem; }
+
+/* tryb od 20 do 65 lat */
+.hud-bars .mood.wide { grid-column: 1 / -1; }
+.acct .tag { flex: none; font-size: .62rem; }
+.payslip td:first-child { padding-right: 8px; }
 
 /* ---------- wynik ---------- */
 .score { font-size: 3.4rem; }
@@ -145,4 +155,13 @@ details.card .body { padding: 0 12px 12px; }
 .rank-list li { grid-template-columns: 30px minmax(0, 1fr) auto; padding: 8px 2px; font-size: .88rem; }
 .rank-list .rs { display: none; }
 .nick-bar { font-size: .86rem; padding: 6px 10px; }
-.hud-bars .mood.wide { grid-column: 1 / -1; }
+
+/* Ekran wyniku: na telefonie tylko zdobyte odznaki, pełna kolekcja jest na stronie głównej. */
+.end-badges .badge:not(.on) { display: none; }
+.end-badges .m-only { display: block; }
+
+/* Bardzo wąskie telefony (np. 320 px): przyklejony przycisk końca miesiąca lub roku mieści się w jednej linijce. */
+@media (max-width: 360px) {
+  .card > [data-act="endMonth"], .card > [data-act="lEnd"] { font-size: .8rem; padding: 8px 10px; }
+  .chip.big { padding: 6px 12px; font-size: .88rem; }
+}

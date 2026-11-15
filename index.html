@@ -4,17 +4,34 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- Zabezpieczenia: strona ładuje tylko własne skrypty, łączy się wyłącznie z bazą wspólnego rankingu (Supabase), licznikiem wejść (Umami) i Cloudflare (kraj do wyboru języka) i nie wysyła formularzy. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://bvxfunfdbkthfjqxnskw.supabase.co https://gateway.umami.is https://www.cloudflare.com; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://bvxfunfdbkthfjqxnskw.supabase.co https://gateway.umami.is https://www.cloudflare.com; form-action 'none'; manifest-src 'self'; base-uri 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Ogarniam Kasę – symulator finansowego życia</title>
 <meta name="description" content="Przeżyj rok albo całe dorosłe życie w kilkanaście minut. Wypłata, oszczędzanie, pułapki i scamy – bez ściemy.">
+<!-- Podgląd linku na Messengerze, Discordzie, Instagramie itp. og:image i og:url muszą być pełnymi adresami (po przejściu na własną domenę podmień adres). -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ogarniam Kasę">
+<meta property="og:title" content="Ogarniam Kasę – symulator finansowego życia">
+<meta property="og:description" content="Przeżyj rok albo całe dorosłe życie w kilkanaście minut. Wypłata, oszczędzanie, pułapki i scamy – bez ściemy.">
+<meta property="og:url" content="https://mursha3.github.io/pierwsza-kasa-web/">
+<meta property="og:image" content="https://mursha3.github.io/pierwsza-kasa-web/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Ogarniam Kasę: Twoja pierwsza kasa. Zero ściemy.">
+<meta property="og:locale" content="pl_PL">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Ikonka w karcie przeglądarki i na ekranie telefonu. -->
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f4f1ea">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 <!-- Numer wersji (?v=) zmieniaj przy każdej aktualizacji, żeby przeglądarki nie mieszały starych i nowych plików. -->
-<link rel="stylesheet" href="styles.css?v=26">
+<link rel="stylesheet" href="styles.css?v=27">
 <!-- Poprawki tylko na telefon: plik działa wyłącznie przy szerokości do 600 px. -->
-<link rel="stylesheet" href="mobile.css?v=26" media="(max-width: 600px)">
+<link rel="stylesheet" href="mobile.css?v=27" media="(max-width: 600px)">
 </head>
 <body>
 <header class="top">
@@ -48,19 +65,19 @@
 
 <noscript><p style="padding:16px">Ta strona potrzebuje włączonej obsługi JavaScript.</p></noscript>
 <!-- Tłumaczenie na angielski: najpierw słownik, potem mechanizm, który podmienia teksty na stronie. -->
-<script src="en.js?v=26"></script>
-<script src="i18n.js?v=26"></script>
-<script src="icons.js?v=26"></script>
-<script src="data.js?v=26"></script>
-<script src="data-extra.js?v=26"></script>
-<script src="lessons.js?v=26"></script>
-<script src="app.js?v=26"></script>
-<script src="nickfilter.js?v=26"></script>
-<script src="ranking-config.js?v=26"></script>
-<script src="rank.js?v=26"></script>
-<script src="challenge.js?v=26"></script>
-<script src="life.js?v=26"></script>
-<script src="game.js?v=26"></script>
-<script src="stats.js?v=26"></script>
+<script src="en.js?v=27"></script>
+<script src="i18n.js?v=27"></script>
+<script src="icons.js?v=27"></script>
+<script src="data.js?v=27"></script>
+<script src="data-extra.js?v=27"></script>
+<script src="lessons.js?v=27"></script>
+<script src="app.js?v=27"></script>
+<script src="nickfilter.js?v=27"></script>
+<script src="ranking-config.js?v=27"></script>
+<script src="rank.js?v=27"></script>
+<script src="challenge.js?v=27"></script>
+<script src="life.js?v=27"></script>
+<script src="game.js?v=27"></script>
+<script src="stats.js?v=27"></script>
 </body>
 </html>

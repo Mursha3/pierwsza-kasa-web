@@ -435,7 +435,7 @@ function viewGame() {
     return `<div class="card nick-card">
       <span class="tag violet">${ic('user')} Twój nick</span>
       <h2 style="margin-top:12px">Jak się nazywasz?</h2>
-      <p class="muted">Pod tym nickiem zapiszesz się w rankingu. Nie wpisuj imienia i nazwiska.</p>
+      <p class="muted">Pod tym nickiem po skończonej grze Twój wynik sam trafi do rankingu. Nie wpisuj imienia i nazwiska.</p>
       <label class="field">Nick (2–16 znaków: litery, cyfry, spacja, _ . -)
         <input type="text" id="nickIn" maxlength="16" autocomplete="nickname" spellcheck="false" value="${esc(draft || '')}" placeholder="np. KasaMistrz"></label>
       <p class="small neg" role="alert" style="min-height:1.4em">${s.nickErr ? esc(s.nickErr) : ''}</p>

@@ -1403,6 +1403,8 @@ const I18N_EN = {
   "Za szybko. Spróbuj ponownie za kilka sekund.": "Too fast. Try again in a few seconds.",
   "Wspólny ranking przyjmuje teraz za dużo wyników naraz, więc ten zapisał się tylko na tym urządzeniu.": "The shared leaderboard is getting too many scores at once right now, so this one was saved only on this device.",
   "Wspólny ranking nie przyjął tego nicku, więc wynik zapisał się tylko na tym urządzeniu.": "The shared leaderboard didn't accept this nickname, so your score was saved only on this device.",
+  "Pod tym nickiem po skończonej grze Twój wynik sam trafi do rankingu. Nie wpisuj imienia i nazwiska.": "When you finish a game, your score goes to the leaderboard under this nickname automatically. Don't enter your real full name.",
+  "bez ciasteczek i śledzenia. Postęp, odznaki i nick zapisują się w Twojej przeglądarce. Po skończonej grze do rankingu trafiają tylko nick, wynik i losowy identyfikator urządzenia. Wejścia i otwierane zakładki liczy Umami, bez ciasteczek i bez danych osobowych. Język dobieramy po kraju, który przy pierwszym wejściu podaje Cloudflare.": "no cookies and no tracking. Progress, badges and your nickname are saved in your browser. When you finish a game, only your nickname, score and a random device ID go to the leaderboard. Visits and opened tabs are counted by Umami, without cookies or personal data. The language is picked from your country, which Cloudflare reports on your first visit.",
 
   // app.js
   "Codziennie jedno małe zadanie z Twoimi prawdziwymi pieniędzmi.": "One small task a day with your real money.",

@@ -198,13 +198,9 @@ function rankForm(s, mode) {
     <button class="btn dark" style="margin-top:10px" data-act="rankSave" data-arg="${mode}" ${s.ranking ? 'disabled' : ''}>${s.ranking ? 'Wysyłam…' : 'Zapisz wynik'}</button></div>`;
 }
 
-ACT.rankSave = mode => {
-  const s = S, input = document.getElementById('rankNick');
-  if (!s || s.phase !== 'end' || s.ranked || s.ranking || !input) return;
-  const err = nickError(input.value);
-  if (err) { document.getElementById('nickMsg').textContent = err; return; }
-  if (ONLINE && Date.now() - lastSaveAt < RANK_SAVE_GAP) { document.getElementById('nickMsg').textContent = 'Za szybko. Spróbuj ponownie za kilka sekund.'; return; }
-  const nick = cleanNick(input.value), m = String(mode);
+// Wysyła wynik skończonej gry do rankingu (najpierw w przeglądarce, potem do wspólnej bazy).
+function submitScore(s, nickRaw, mode) {
+  const nick = cleanNick(nickRaw), m = String(mode);
   const life = s.mode === 'life', score = life ? lifeScore(s) : scoreOf(s), net = life ? score.net : netWorth(s);
   saveNick(nick);
   const postac = life ? null : s.c.id;
@@ -222,7 +218,26 @@ ACT.rankSave = mode => {
     })
     .catch(e => { const m2 = e.msg || ''; s.ranked = { place: local.place, where: 'local', failed: /Za dużo/.test(m2) ? 'busy' : /nick/i.test(m2) ? 'nick' : 'net' }; })
     .finally(() => { s.ranking = false; if (view === 'game' && S === s) render(); });
+}
+
+ACT.rankSave = mode => {
+  const s = S, input = document.getElementById('rankNick');
+  if (!s || s.phase !== 'end' || s.ranked || s.ranking || !input) return;
+  const err = nickError(input.value);
+  if (err) { document.getElementById('nickMsg').textContent = err; return; }
+  if (ONLINE && Date.now() - lastSaveAt < RANK_SAVE_GAP) { document.getElementById('nickMsg').textContent = 'Za szybko. Spróbuj ponownie za kilka sekund.'; return; }
+  submitScore(s, input.value, mode);
 };
+
+// Gracze zapominali kliknąć „Zapisz wynik”, więc po skończonej grze wynik zapisuje się sam, pod nickiem wpisanym
+// przed grą. Tylko raz na grę (flaga zostaje w zapisanej grze); bez poprawnego nicku zostaje ręczny formularz.
+function autoRank(s) {
+  if (!s || s.phase !== 'end' || s.ranked || s.ranking || s.autoTried) return;
+  const nick = lastNick();
+  if (!nick || nickError(nick)) return;
+  s.autoTried = true;
+  submitScore(s, nick, s.mode === 'life' ? 'life' : s.months);
+}
 
 ACT.rankMode = m => { if (RANK_MODES.some(x => x[0] === String(m))) { rankMode = String(m); rankShow = RANK_PAGE; refreshRank(); render(); } };
 ACT.rankMore = () => { rankShow += RANK_PAGE; render(); };

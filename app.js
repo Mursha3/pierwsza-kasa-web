@@ -98,6 +98,8 @@ function render() {
   if (view === 'lessons') { calcCompound(); calcPay(); calcInfl(); }
   if (view === 'home') { initCoin(); initTilt(); }
   if (view === 'game') saveGame();
+  // Koniec gry: wynik trafia do rankingu sam (rank.js); po bieżącym rysowaniu, bo zapis rysuje ekran od nowa.
+  if (view === 'game' && S && S.phase === 'end' && typeof autoRank === 'function') setTimeout(() => autoRank(S), 0);
   if (view === 'rank') initPodium();
   initStacks();
 }

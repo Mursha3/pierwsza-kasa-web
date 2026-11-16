@@ -17,6 +17,8 @@
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
+/* telefon: dwa szybkie stuknięcia nie przybliżają strony (szczypanie dalej działa) */
+:where(*) { touch-action: manipulation; }
 body {
   margin: 0;
   background: var(--paper);
